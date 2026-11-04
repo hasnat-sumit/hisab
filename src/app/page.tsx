@@ -21,15 +21,15 @@ const FEATURES = [
   },
   {
     icon: PiggyBank,
-    title: "Monthly savings",
+    title: "Savings that add up",
     description:
-      "See your income, expenses and savings in Taka (৳) for any month, worked out for you.",
+      "See what you save each month and in total, in Taka (৳), with charts of where it goes.",
   },
   {
     icon: Bike,
-    title: "Bike fuel and mileage",
+    title: "Bikes and cars",
     description:
-      "Log each fill-up to follow your km/L, total fuel cost and cost per km for every bike.",
+      "Log fuel and servicing for every vehicle to follow your km/L and running costs.",
   },
   {
     icon: FileText,
@@ -46,7 +46,7 @@ export default function LandingPage() {
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-2 md:px-8 md:py-3">
           <Link
             href="/"
-            aria-label="Hisab home"
+            aria-label="হিসাব-Hisab home"
             className="flex min-h-10 items-center rounded-lg"
           >
             <Logo />
@@ -74,11 +74,11 @@ export default function LandingPage() {
       <main className="flex-1">
         <section className="mx-auto w-full max-w-3xl px-4 py-16 text-center md:px-8 md:py-24">
           <h1 className="text-4xl font-semibold tracking-tight text-balance md:text-5xl">
-            Your money and your bike, in one simple place
+            Your money and your vehicles, in one simple place
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-lg text-pretty text-muted-foreground">
-            Hisab tracks your income, expenses and savings, along with your
-            motorcycle&apos;s fuel and mileage.
+            হিসাব-Hisab tracks your income, expenses and savings, along with
+            your vehicles&apos; fuel and mileage.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <Link href="/signup" className={buttonVariants({ size: "lg" })}>
@@ -127,7 +127,7 @@ export default function LandingPage() {
       <footer className="border-t bg-card pb-[env(safe-area-inset-bottom)]">
         <div className="mx-auto flex w-full max-w-5xl flex-col items-center justify-between gap-3 px-4 py-6 text-sm text-muted-foreground sm:flex-row md:px-8">
           <p className="text-center sm:text-left">
-            Hisab: personal finance and motorcycle tracker
+            হিসাব-Hisab: personal finance and vehicle tracker
           </p>
           <nav aria-label="Footer" className="flex gap-4">
             <Link

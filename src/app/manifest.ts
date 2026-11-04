@@ -4,9 +4,10 @@ import type { MetadataRoute } from "next";
 // screen. There is no service worker, so the app still needs a connection.
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Hisab",
+    name: "হিসাব-Hisab",
     short_name: "Hisab",
-    description: "Track your income, expenses and motorcycle fuel in one place.",
+    description:
+      "Track your income, savings, vehicles and fuel in one simple place.",
     start_url: "/home",
     display: "standalone",
     orientation: "any",

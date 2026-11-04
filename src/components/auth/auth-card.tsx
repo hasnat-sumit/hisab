@@ -23,7 +23,7 @@ export function AuthCard({
     <div className="flex w-full max-w-sm flex-col items-center gap-6">
       <Link
         href="/"
-        aria-label="Hisab home"
+        aria-label="হিসাব-Hisab home"
         className="flex min-h-10 items-center rounded-lg"
       >
         <Logo />

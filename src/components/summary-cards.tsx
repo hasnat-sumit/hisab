@@ -20,7 +20,7 @@ function SummaryCard({
       <p
         className={cn(
           // Wraps rather than cutting digits off a large amount.
-          "text-xl font-semibold tracking-tight tabular-nums wrap-anywhere sm:text-2xl",
+          "text-xl font-semibold tracking-tight wrap-anywhere sm:text-2xl",
           amountClassName,
         )}
       >
@@ -30,17 +30,26 @@ function SummaryCard({
   );
 }
 
+/** Income, expenses and savings for the month being viewed. */
 export function SummaryCards({ summary }: { summary: MonthSummary }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-      <SummaryCard label="Total Income" amount={summary.income} />
-      <SummaryCard label="Total Expenses" amount={summary.expenses} />
       <SummaryCard
-        label="Total Savings"
+        label="Income of Month"
+        amount={summary.income}
+        amountClassName="text-income"
+      />
+      <SummaryCard
+        label="Expenses of Month"
+        amount={summary.expenses}
+        amountClassName="text-expense"
+      />
+      <SummaryCard
+        label="Saving of Month"
         amount={summary.savings}
         className="col-span-2 bg-accent ring-primary/15 sm:col-span-1"
         amountClassName={
-          summary.savings < 0 ? "text-destructive" : "text-accent-foreground"
+          summary.savings < 0 ? "text-expense" : "text-accent-foreground"
         }
       />
     </div>

@@ -1,7 +1,8 @@
 import { failOnDuplicate, parseBody, withUser } from "@/lib/api";
+import { VEHICLE_CATEGORY } from "@/lib/constants";
 import { assertValidFuelEntry } from "@/lib/data/fuel-validation";
 import { toDate } from "@/lib/dates";
-import { FuelEntry } from "@/lib/models/fuel-entry";
+import { Transaction } from "@/lib/models/transaction";
 import { fuelEntrySchema } from "@/lib/validators";
 
 export const POST = withUser(async ({ request, user }) => {
@@ -10,7 +11,23 @@ export const POST = withUser(async ({ request, user }) => {
 
   const entry = await failOnDuplicate(
     () =>
-      FuelEntry.create({ ...data, date: toDate(data.date), userId: user.id }),
+      Transaction.create({
+        userId: user.id,
+        type: "expense",
+        date: toDate(data.date),
+        category: VEHICLE_CATEGORY,
+        amount: data.totalCost,
+        note: data.note,
+        paymentMethod: data.paymentMethod,
+        bikeId: data.bikeId,
+        vehicleExpenseType: "fuel",
+        fuel: {
+          odometer: data.odometer,
+          liters: data.fuelQuantity,
+          pricePerLiter: data.pricePerLiter,
+          fullTank: data.fullTank,
+        },
+      }),
     "This fuel entry has already been saved.",
     "odometer",
   );

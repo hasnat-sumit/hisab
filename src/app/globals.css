@@ -2,10 +2,15 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* The theme comes from a class on <html>, set from the saved preference. */
+@custom-variant dark (&:is(.dark *));
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-income: var(--income);
+  --color-expense: var(--expense);
+  --font-sans: var(--font-geist-sans), var(--font-bengali);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-geist-sans);
   --color-ring: var(--ring);
@@ -54,6 +59,56 @@
   --input: oklch(0.89 0.005 165);
   --ring: oklch(0.7 0.12 165);
   --radius: 0.625rem;
+  --income: #047857;
+  --expense: #dc2626;
+  /* Chart colors, checked with the palette validator for each surface. */
+  --chart-income: #059669;
+  --chart-expense: #dc2626;
+  --chart-savings: #2a78d6;
+  --chart-savings-light: #86b6ef;
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
+  --chart-3: #1baf7a;
+  --chart-4: #eda100;
+  --chart-5: #e87ba4;
+  --chart-6: #008300;
+  --chart-other: #898781;
+  --chart-grid: #e6e8e6;
+}
+
+.dark {
+  color-scheme: dark;
+  --background: oklch(0.17 0.008 165);
+  --foreground: oklch(0.95 0.005 165);
+  --card: oklch(0.22 0.01 165);
+  --card-foreground: oklch(0.95 0.005 165);
+  --popover: oklch(0.24 0.01 165);
+  --popover-foreground: oklch(0.95 0.005 165);
+  --primary: oklch(0.6 0.13 165);
+  --primary-foreground: oklch(0.15 0.01 165);
+  --secondary: oklch(0.28 0.01 165);
+  --secondary-foreground: oklch(0.95 0.005 165);
+  --muted: oklch(0.28 0.01 165);
+  --muted-foreground: oklch(0.72 0.012 165);
+  --accent: oklch(0.31 0.05 165);
+  --accent-foreground: oklch(0.87 0.09 165);
+  --destructive: oklch(0.68 0.19 25);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 18%);
+  --ring: oklch(0.6 0.12 165);
+  --income: #34d399;
+  --expense: #f87171;
+  --chart-income: #0f9f6e;
+  --chart-expense: #ef4444;
+  --chart-savings: #3987e5;
+  --chart-savings-light: #1c5cab;
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
+  --chart-3: #199e70;
+  --chart-4: #c98500;
+  --chart-5: #d55181;
+  --chart-6: #008300;
+  --chart-grid: #2c3531;
 }
 
 @layer base {

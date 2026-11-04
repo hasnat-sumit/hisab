@@ -1,9 +1,10 @@
+import { Types } from "mongoose";
+
 import { failOnDuplicate, isObjectId, notFound, parseBody, withUser } from "@/lib/api";
 import { assertValidFuelEntry } from "@/lib/data/fuel-validation";
 import { toDate } from "@/lib/dates";
-import { FuelEntry } from "@/lib/models/fuel-entry";
+import { Transaction } from "@/lib/models/transaction";
 import { fuelEntrySchema } from "@/lib/validators";
-import { Types } from "mongoose";
 
 type Params = { id: string };
 
@@ -11,15 +12,25 @@ export const PATCH = withUser<Params>(async ({ request, user, params }) => {
   if (!isObjectId(params.id)) throw notFound("Fuel entry");
   const data = await parseBody(request, fuelEntrySchema);
 
-  const entry = await FuelEntry.findOne({ _id: params.id, userId: user.id });
+  const entry = await Transaction.findOne({
+    _id: params.id,
+    userId: user.id,
+    vehicleExpenseType: "fuel",
+  });
   if (!entry) throw notFound("Fuel entry");
   await assertValidFuelEntry(user.id, data, params.id);
 
   entry.bikeId = new Types.ObjectId(data.bikeId);
   entry.date = toDate(data.date);
-  entry.odometer = data.odometer;
-  entry.fuelQuantity = data.fuelQuantity;
-  entry.totalCost = data.totalCost;
+  entry.amount = data.totalCost;
+  entry.note = data.note;
+  entry.paymentMethod = data.paymentMethod;
+  entry.fuel = {
+    odometer: data.odometer,
+    liters: data.fuelQuantity,
+    pricePerLiter: data.pricePerLiter,
+    fullTank: data.fullTank,
+  };
   await failOnDuplicate(
     () => entry.save(),
     "This fuel entry has already been saved.",
@@ -30,9 +41,10 @@ export const PATCH = withUser<Params>(async ({ request, user, params }) => {
 
 export const DELETE = withUser<Params>(async ({ user, params }) => {
   if (!isObjectId(params.id)) throw notFound("Fuel entry");
-  const deleted = await FuelEntry.findOneAndDelete({
+  const deleted = await Transaction.findOneAndDelete({
     _id: params.id,
     userId: user.id,
+    vehicleExpenseType: "fuel",
   });
   if (!deleted) throw notFound("Fuel entry");
   return new Response(null, { status: 204 });

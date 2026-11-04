@@ -3,6 +3,7 @@ import "server-only";
 import { z } from "zod";
 
 import { getAuth } from "./auth";
+import { migrateFuelIfNeeded } from "./data/migrate-fuel";
 import { connectDB, MissingConfigError } from "./db";
 import type { SessionUser } from "./types";
 
@@ -94,13 +95,15 @@ export function withUser<Params = Record<string, never>>(
     context: { params: Promise<Params> },
   ): Promise<Response> => {
     try {
-      const session = await getAuth().api.getSession({
-        headers: request.headers,
-      });
+      // Side by side, so a cold start does not wait for one connection at a time.
+      const [session] = await Promise.all([
+        getAuth().api.getSession({ headers: request.headers }),
+        connectDB(),
+      ]);
       if (!session) throw new ApiError(401, "Please log in again.");
 
-      await connectDB();
       const { id, name, email } = session.user;
+      await migrateFuelIfNeeded(id);
       return await handler({
         request,
         user: { id, name, email },

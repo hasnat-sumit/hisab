@@ -1,4 +1,12 @@
-import type { DocumentType, TransactionType } from "./constants";
+import type {
+  DocumentType,
+  ModuleSettings,
+  PaymentMethod,
+  ThemePreference,
+  TransactionType,
+  VehicleExpenseType,
+  VehicleType,
+} from "./constants";
 import type { FuelReading } from "./mileage";
 
 // Plain objects passed from the server to client components.
@@ -9,6 +17,18 @@ export type SessionUser = {
   email: string;
 };
 
+export type SettingsDTO = {
+  theme: ThemePreference;
+  modules: ModuleSettings;
+};
+
+export type FuelDetailsDTO = {
+  odometer: number;
+  liters: number;
+  pricePerLiter?: number;
+  fullTank?: boolean;
+};
+
 export type TransactionDTO = {
   id: string;
   type: TransactionType;
@@ -16,20 +36,40 @@ export type TransactionDTO = {
   category: string;
   amount: number;
   note?: string;
+  paymentMethod?: PaymentMethod;
+  recurring?: boolean;
+  bikeId?: string;
+  vehicleExpenseType?: VehicleExpenseType;
+  fuel?: FuelDetailsDTO;
 };
 
 export type BikeDTO = {
   id: string;
   name: string;
+  vehicleType: VehicleType;
   brand?: string;
   model?: string;
   registrationNumber?: string;
   purchaseDate?: string;
-  isDefault: boolean;
+  archived: boolean;
+};
+
+/** A transaction that belongs to a vehicle. */
+export type VehicleExpenseDTO = {
+  id: string;
+  bikeId: string;
+  date: string;
+  expenseType: VehicleExpenseType;
+  amount: number;
+  note?: string;
+  paymentMethod?: PaymentMethod;
+  fuel?: FuelDetailsDTO;
 };
 
 export type FuelEntryDTO = FuelReading & {
   bikeId: string;
+  note?: string;
+  paymentMethod?: PaymentMethod;
 };
 
 export type DocumentDTO = {

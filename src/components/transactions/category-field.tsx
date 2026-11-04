@@ -2,13 +2,17 @@
 
 import { useState } from "react";
 
-import { SimpleSelect } from "@/components/simple-select";
+import { ChoiceChips } from "@/components/choice-chips";
 import { Input } from "@/components/ui/input";
-import { categoryOptions, type TransactionType } from "@/lib/constants";
+import {
+  categoryOptions,
+  VEHICLE_CATEGORY,
+  type TransactionType,
+} from "@/lib/constants";
 
 const NEW_CATEGORY = "__new__";
 
-/** Category dropdown whose last option lets the user type their own. */
+/** Every category as a tappable choice, plus one to type a new one. */
 export function CategoryField({
   id,
   type,
@@ -55,18 +59,21 @@ export function CategoryField({
     );
   }
 
+  // Vehicle expenses are added from the Vehicles page, linked to a vehicle.
   const options = categoryOptions(type, [
     ...usedCategories,
     ...(value ? [value] : []),
-  ]).map((category) => ({ value: category, label: category }));
+  ])
+    .filter((category) => category !== VEHICLE_CATEGORY)
+    .map((category) => ({ value: category, label: category }));
 
   return (
-    <SimpleSelect
+    <ChoiceChips
       id={id}
+      label="Category"
       value={value}
       invalid={invalid}
-      placeholder="Choose a category"
-      options={[...options, { value: NEW_CATEGORY, label: "+ New category" }]}
+      options={[...options, { value: NEW_CATEGORY, label: "+ New" }]}
       onChange={(next) => {
         if (next === NEW_CATEGORY) {
           onChange("");

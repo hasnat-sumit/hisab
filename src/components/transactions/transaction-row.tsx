@@ -1,6 +1,7 @@
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, Repeat } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { paymentMethodLabel, vehicleExpenseLabel } from "@/lib/constants";
 import { formatDate } from "@/lib/dates";
 import { formatTaka } from "@/lib/format";
 import type { TransactionDTO } from "@/lib/types";
@@ -8,32 +9,53 @@ import { cn } from "@/lib/utils";
 
 export function TransactionRow({
   transaction,
+  vehicleName,
   children,
 }: {
   transaction: TransactionDTO;
+  /** The linked vehicle, for an expense that belongs to one. */
+  vehicleName?: string;
   /** Optional actions shown at the end of the row. */
   children?: ReactNode;
 }) {
   const isIncome = transaction.type === "income";
   const Icon = isIncome ? ArrowDownLeft : ArrowUpRight;
+  const details = [
+    formatDate(transaction.date),
+    transaction.paymentMethod && paymentMethodLabel(transaction.paymentMethod),
+    transaction.note,
+  ].filter(Boolean);
   return (
     <li className="flex items-center gap-3 py-3">
       <span
         className={cn(
           "flex size-9 shrink-0 items-center justify-center rounded-full",
           isIncome
-            ? "bg-accent text-accent-foreground"
-            : "bg-muted text-muted-foreground",
+            ? "bg-accent text-income"
+            : "bg-muted text-expense",
         )}
       >
         <Icon className="size-4" aria-hidden />
         <span className="sr-only">{isIncome ? "Income" : "Expense"}</span>
       </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate font-medium">{transaction.category}</p>
+        <p className="flex items-center gap-1.5 font-medium">
+          <span className="truncate">{transaction.category}</span>
+          {transaction.recurring && (
+            <Repeat
+              className="size-3.5 shrink-0 text-muted-foreground"
+              aria-label="Recurring"
+            />
+          )}
+        </p>
+        {transaction.vehicleExpenseType && (
+          <p className="truncate text-xs text-muted-foreground">
+            {vehicleName ?? "Vehicle"} ·{" "}
+            {vehicleExpenseLabel(transaction.vehicleExpenseType)}
+          </p>
+        )}
         <p className="truncate text-xs text-muted-foreground">
-          {formatDate(transaction.date)}
-          {transaction.note && ` · ${transaction.note}`}
+          {details.join(" · ")}
         </p>
       </div>
       {/* On phones the actions sit under the amount, leaving room for the text. */}
@@ -41,7 +63,7 @@ export function TransactionRow({
         <p
           className={cn(
             "font-semibold tabular-nums",
-            isIncome && "text-primary",
+            isIncome ? "text-income" : "text-expense",
           )}
         >
           {isIncome ? "+" : "-"}

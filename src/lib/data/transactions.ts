@@ -1,9 +1,11 @@
 import "server-only";
 
+import { cache } from "react";
+
 import type { TransactionType } from "../constants";
 import { connectDB } from "../db";
 import { monthRange, toISODate } from "../dates";
-import { buildSummary, type MonthSummary } from "../finance";
+import type { FinanceRow } from "../finance";
 import { Transaction, type TransactionDoc } from "../models/transaction";
 import type { TransactionDTO } from "../types";
 
@@ -17,38 +19,55 @@ function toDTO(doc: LeanTransaction): TransactionDTO {
     category: doc.category,
     amount: doc.amount,
     note: doc.note,
+    paymentMethod: doc.paymentMethod,
+    recurring: doc.recurring,
+    bikeId: doc.bikeId?.toString(),
+    vehicleExpenseType: doc.vehicleExpenseType,
+    fuel: doc.fuel
+      ? {
+          odometer: doc.fuel.odometer,
+          liters: doc.fuel.liters,
+          pricePerLiter: doc.fuel.pricePerLiter,
+          fullTank: doc.fuel.fullTank,
+        }
+      : undefined,
   };
 }
 
-export async function getMonthSummary(
-  userId: string,
-  month: string,
-): Promise<MonthSummary> {
-  await connectDB();
-  const { start, end } = monthRange(month);
-  const totals = await Transaction.aggregate<{
-    _id: TransactionType;
-    total: number;
-  }>([
-    { $match: { userId, date: { $gte: start, $lt: end } } },
-    { $group: { _id: "$type", total: { $sum: "$amount" } } },
-  ]);
-  const totalFor = (type: TransactionType) =>
-    totals.find((t) => t._id === type)?.total ?? 0;
-  return buildSummary(totalFor("income"), totalFor("expense"));
-}
-
-export async function getRecentTransactions(
-  userId: string,
-  limit = 5,
-): Promise<TransactionDTO[]> {
-  await connectDB();
-  const docs = await Transaction.find({ userId })
-    .sort({ date: -1, createdAt: -1 })
-    .limit(limit)
-    .lean<LeanTransaction[]>();
-  return docs.map(toDTO);
-}
+/**
+ * Totals by month, type and category, from which every summary, category list
+ * and chart is worked out. One query, however much a page shows, and read once
+ * per request.
+ */
+export const getFinanceRows = cache(
+  async (userId: string): Promise<FinanceRow[]> => {
+    await connectDB();
+    const rows = await Transaction.aggregate<{
+      _id: { month: string; type: TransactionType; category: string };
+      total: number;
+    }>([
+      { $match: { userId } },
+      {
+        $group: {
+          _id: {
+            month: {
+              $dateToString: { date: "$date", format: "%Y-%m", timezone: "UTC" },
+            },
+            type: "$type",
+            category: "$category",
+          },
+          total: { $sum: "$amount" },
+        },
+      },
+    ]);
+    return rows.map(({ _id, total }) => ({
+      month: _id.month,
+      type: _id.type,
+      category: _id.category,
+      total,
+    }));
+  },
+);
 
 export async function listTransactions(
   userId: string,
@@ -65,13 +84,4 @@ export async function listTransactions(
     .sort({ date: -1, createdAt: -1 })
     .lean<LeanTransaction[]>();
   return docs.map(toDTO);
-}
-
-/** Categories the user has already used, including custom ones. */
-export async function getUsedCategories(
-  userId: string,
-  type: TransactionType,
-): Promise<string[]> {
-  await connectDB();
-  return Transaction.distinct("category", { userId, type });
 }

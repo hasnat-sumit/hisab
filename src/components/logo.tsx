@@ -7,7 +7,7 @@ export function Logo() {
       >
         H
       </span>
-      Hisab
+      হিসাব-Hisab
     </span>
   );
 }

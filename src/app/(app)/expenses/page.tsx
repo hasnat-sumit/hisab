@@ -3,7 +3,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { CategoryBreakdown } from "@/components/category-breakdown";
 import { EmptyState } from "@/components/empty-state";
+import { ModuleOff } from "@/components/module-off";
 import { MonthSwitcher } from "@/components/month-switcher";
 import { PageHeader } from "@/components/page-header";
 import { PageSkeleton } from "@/components/page-skeleton";
@@ -14,12 +16,15 @@ import { TransactionActions } from "@/components/transactions/transaction-action
 import { TransactionRow } from "@/components/transactions/transaction-row";
 import { Card } from "@/components/ui/card";
 import { categoryOptions, type TransactionType } from "@/lib/constants";
-import {
-  getMonthSummary,
-  getUsedCategories,
-  listTransactions,
-} from "@/lib/data/transactions";
+import { getBikes } from "@/lib/data/bikes";
+import { getSettings } from "@/lib/data/settings";
+import { getFinanceRows, listTransactions } from "@/lib/data/transactions";
 import { formatMonth, resolveMonth } from "@/lib/dates";
+import {
+  categoryBreakdown,
+  periodSummary,
+  usedCategories as findUsedCategories,
+} from "@/lib/finance";
 import { requireUser } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
@@ -58,11 +63,22 @@ async function ExpensesContent({
       ? params.category
       : undefined;
 
-  const [summary, transactions, usedCategories] = await Promise.all([
-    getMonthSummary(user.id, month),
+  const [settings, rows, transactions, bikes] = await Promise.all([
+    getSettings(user.id),
+    getFinanceRows(user.id),
     listTransactions(user.id, { type, month, category }),
-    getUsedCategories(user.id, type),
+    getBikes(user.id),
   ]);
+  if (!settings.modules.finance) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="Expenses" />
+        <ModuleOff name="Finance" />
+      </div>
+    );
+  }
+
+  const usedCategories = findUsedCategories(rows, type);
   const noun = type === "income" ? "income" : "expenses";
 
   return (
@@ -71,7 +87,7 @@ async function ExpensesContent({
         <MonthSwitcher month={month} hrefFor={(m) => pageHref(type, m)} />
       </PageHeader>
 
-      <SummaryCards summary={summary} />
+      <SummaryCards summary={periodSummary(rows, month)} />
 
       <div
         role="navigation"
@@ -99,6 +115,12 @@ async function ExpensesContent({
         })}
       </div>
 
+      <CategoryBreakdown
+        type={type}
+        breakdown={categoryBreakdown(rows, month, type)}
+        periodLabel={formatMonth(month)}
+      />
+
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <CategoryFilter
           key={`${type}-${category ?? "all"}`}
@@ -123,10 +145,17 @@ async function ExpensesContent({
         ) : (
           <ul className="divide-y">
             {transactions.map((transaction) => (
-              <TransactionRow key={transaction.id} transaction={transaction}>
+              <TransactionRow
+                key={transaction.id}
+                transaction={transaction}
+                vehicleName={
+                  bikes.find((bike) => bike.id === transaction.bikeId)?.name
+                }
+              >
                 <TransactionActions
                   transaction={transaction}
                   usedCategories={usedCategories}
+                  bikes={bikes}
                 />
               </TransactionRow>
             ))}

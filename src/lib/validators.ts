@@ -1,7 +1,17 @@
 import { z } from "zod";
 
-import { DOCUMENT_TYPE_VALUES, TRANSACTION_TYPES } from "./constants";
+import {
+  DOCUMENT_TYPE_VALUES,
+  MODULE_KEYS,
+  NON_FUEL_EXPENSE_TYPE_VALUES,
+  PAYMENT_METHOD_VALUES,
+  THEME_VALUES,
+  TRANSACTION_TYPES,
+  VEHICLE_CATEGORY,
+  VEHICLE_TYPE_VALUES,
+} from "./constants";
 import { isValidISODate } from "./dates";
+import { resolveFuelAmounts } from "./mileage";
 
 // Shared by the browser forms and the API routes, so the rules cannot drift.
 // Forms submit numbers as text, while the API accepts text or JSON numbers.
@@ -13,6 +23,17 @@ function numberField(requiredMessage: string) {
     .transform(Number)
     .pipe(z.number({ error: "Enter a valid number." }));
 }
+
+/** A number the user may leave empty, which then comes through as undefined. */
+const optionalNumberField = z
+  .union([z.number(), z.string()], { error: "Enter a valid number." })
+  .optional()
+  .transform((value) =>
+    value === undefined || String(value).trim() === ""
+      ? undefined
+      : Number(value),
+  )
+  .pipe(z.number({ error: "Enter a valid number." }).optional());
 
 const dateField = z
   .string({ error: "Pick a date." })
@@ -31,6 +52,18 @@ function optionalText(max: number) {
     .transform((value) => value || undefined);
 }
 
+const amountField = numberField("Enter an amount.")
+  .refine((n) => n > 0, "Amount must be greater than zero.")
+  .refine((n) => n <= 1_000_000_000, "That amount is too large.")
+  .transform((n) => Math.round(n * 100) / 100);
+
+const paymentMethodField = z
+  .union([z.literal(""), z.enum(PAYMENT_METHOD_VALUES)], {
+    error: "Choose a payment method.",
+  })
+  .optional()
+  .transform((value) => value || undefined);
+
 export const transactionSchema = z.object({
   type: z.enum(TRANSACTION_TYPES),
   date: dateField,
@@ -38,20 +71,26 @@ export const transactionSchema = z.object({
     .string({ error: "Choose a category." })
     .trim()
     .min(1, "Choose a category.")
-    .max(40, "Keep the category under 40 characters."),
-  amount: numberField("Enter an amount.")
-    .refine((n) => n > 0, "Amount must be greater than zero.")
-    .refine((n) => n <= 1_000_000_000, "That amount is too large.")
-    .transform((n) => Math.round(n * 100) / 100),
+    .max(40, "Keep the category under 40 characters.")
+    .refine(
+      (value) => value.toLowerCase() !== VEHICLE_CATEGORY.toLowerCase(),
+      "Add vehicle expenses from the Vehicles page, so they link to a vehicle.",
+    ),
+  amount: amountField,
   note: optionalText(200),
+  paymentMethod: paymentMethodField,
+  recurring: z.boolean().optional(),
 });
 
 export const bikeSchema = z.object({
   name: z
-    .string({ error: "Enter a bike name." })
+    .string({ error: "Enter a vehicle name." })
     .trim()
-    .min(1, "Enter a bike name.")
+    .min(1, "Enter a vehicle name.")
     .max(60, "Keep the name under 60 characters."),
+  vehicleType: z
+    .enum(VEHICLE_TYPE_VALUES, { error: "Choose a vehicle type." })
+    .default("bike"),
   brand: optionalText(60),
   model: optionalText(60),
   registrationNumber: optionalText(40),
@@ -61,18 +100,68 @@ export const bikeSchema = z.object({
     .transform((value) => value || undefined),
 });
 
-export const fuelEntrySchema = z.object({
+export const vehicleExpenseSchema = z.object({
   bikeId: objectIdField,
   date: dateField,
-  odometer: numberField("Enter the odometer reading.")
-    .refine((n) => n >= 0, "Odometer cannot be negative.")
-    .refine((n) => n <= 10_000_000, "That reading is too large."),
-  fuelQuantity: numberField("Enter the fuel quantity.")
-    .refine((n) => n > 0, "Fuel quantity must be greater than zero.")
-    .refine((n) => n <= 1000, "That quantity is too large."),
-  totalCost: numberField("Enter the total cost.")
-    .refine((n) => n >= 0, "Cost cannot be negative.")
-    .refine((n) => n <= 10_000_000, "That cost is too large."),
+  expenseType: z.enum(NON_FUEL_EXPENSE_TYPE_VALUES, {
+    error: "Choose an expense type.",
+  }),
+  amount: amountField,
+  note: optionalText(200),
+  paymentMethod: paymentMethodField,
+});
+
+export const fuelEntrySchema = z
+  .object({
+    bikeId: objectIdField,
+    date: dateField,
+    odometer: numberField("Enter the odometer reading.")
+      .refine((n) => n >= 0, "Odometer cannot be negative.")
+      .refine((n) => n <= 10_000_000, "That reading is too large."),
+    totalCost: optionalNumberField
+      .refine((n) => n === undefined || n >= 0, "Cost cannot be negative.")
+      .refine(
+        (n) => n === undefined || n <= 10_000_000,
+        "That cost is too large.",
+      ),
+    pricePerLiter: optionalNumberField
+      .refine((n) => n === undefined || n > 0, "Price must be above zero.")
+      .refine(
+        (n) => n === undefined || n <= 100_000,
+        "That price is too large.",
+      ),
+    fuelQuantity: optionalNumberField
+      .refine(
+        (n) => n === undefined || n > 0,
+        "Fuel quantity must be greater than zero.",
+      )
+      .refine((n) => n === undefined || n <= 1000, "That quantity is too large."),
+    fullTank: z.boolean().optional(),
+    note: optionalText(200),
+    paymentMethod: paymentMethodField,
+  })
+  .transform((data, context) => {
+    const amounts = resolveFuelAmounts(data);
+    if (!amounts) {
+      context.addIssue({
+        code: "custom",
+        path: ["totalCost"],
+        message: "Enter any two of amount, price per liter and liters.",
+      });
+      return z.NEVER;
+    }
+    return { ...data, ...amounts };
+  });
+
+export const settingsSchema = z.object({
+  theme: z.enum(THEME_VALUES).optional(),
+  modules: z
+    .object(
+      Object.fromEntries(
+        MODULE_KEYS.map((key) => [key, z.boolean().optional()]),
+      ) as Record<(typeof MODULE_KEYS)[number], z.ZodOptional<z.ZodBoolean>>,
+    )
+    .optional(),
 });
 
 export const documentMetaSchema = z.object({
@@ -100,6 +189,14 @@ export const signUpSchema = z.object({
   name: z.string().trim().min(1, "Enter your name.").max(60),
   email: z.email("Enter a valid email address."),
   password: newPassword,
+});
+
+export const profileSchema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, "Enter your name.")
+    .max(60, "Keep the name under 60 characters."),
 });
 
 export const changePasswordSchema = z.object({

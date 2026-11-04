@@ -1,6 +1,6 @@
-# Hisab
+# হিসাব-Hisab
 
-A simple, mobile-first app for tracking personal income and expenses in Bangladeshi Taka (৳), plus motorcycle fuel and mileage, with private storage for bike documents.
+A simple, mobile-first app for tracking personal income, expenses and savings in Bangladeshi Taka (৳), plus bikes and cars with their fuel, mileage and running costs, and private storage for vehicle documents.
 
 Built with Next.js 16 (App Router), TypeScript, Tailwind CSS v4, shadcn/ui (Base UI), MongoDB with Mongoose, and Better Auth.
 
@@ -82,6 +82,8 @@ The database must be a replica set, because sign-up uses a transaction. Every At
    - `BETTER_AUTH_URL`: your production address, for example `https://hisab.vercel.app`
 4. Deploy. If you added variables after the first deploy, redeploy so they take effect.
 
+Keep the app close to the database, because every page view talks to it. `vercel.json` runs the app in `bom1` (Mumbai) to match an Atlas cluster in `ap-south-1`. If your cluster is elsewhere, change it to the [nearest Vercel region](https://vercel.com/docs/edge-network/regions).
+
 ## How it works
 
 - **Pages** (`src/app/(app)`) are Server Components that read data through `src/lib/data`, behind a `Suspense` boundary because they depend on the logged-in user.
@@ -92,9 +94,36 @@ The database must be a replica set, because sign-up uses a transaction. Every At
 
 ### How the numbers are calculated
 
-- **Savings** = income − expenses for the selected month. Savings are never stored.
-- **Mileage for an entry** = (this odometer − previous odometer) ÷ this entry's fuel. The first entry has no mileage because there is nothing to compare it with.
-- **Average mileage** = total distance ÷ fuel from every entry except the first. No distance was measured against the first fill, so including it would understate your mileage.
-- **Cost per km** = cost of every entry except the first ÷ total distance. **Total fuel cost** does include the first fill.
-- **Fuel and expenses are separate.** A fuel entry does not create an expense automatically. To count fuel in your monthly spending, add it as an expense in the Bike category too.
+- **Saving of Month** = that month's income − expenses. **Total Savings** = all income − all expenses, across every month. Neither is ever stored, so they cannot fall out of step with your records.
+- **One record per payment.** Fuel and other vehicle expenses are saved as transactions linked to a vehicle, so they appear in Expenses automatically and are never counted twice.
+- **Fuel amounts.** Any two of amount, price per liter and liters give the third. When all three are present, the amount and liters win, because they are what the pump showed, and the price is worked out from them.
+- **Reliable mileage** is measured between two fill-ups marked as a full tank: the distance between them ÷ all the fuel added since the first one.
+- **Estimated mileage** is used for every other entry: (this odometer − previous odometer) ÷ this entry's fuel. It assumes each fill-up replaced what was burned. The first entry has no mileage because there is nothing to compare it with.
+- **Average mileage** uses only reliable measurements when there are any, and estimates otherwise. It is labelled either way.
+- **Cost per km** = cost of every fuel entry except the first ÷ total distance.
 - **"Today" and the current month** use Bangladesh time, wherever the server runs.
+
+### Vehicles and your history
+
+A vehicle with expense records cannot be deleted, because those records are part of your financial history. Archive it instead: it leaves your lists, but its expenses still count in your totals, and you can restore it at any time. A vehicle with no records can be deleted.
+
+Turning a module off in **Profile** only hides it. No data is changed or removed.
+
+### Upgrading from an earlier version
+
+Nothing needs to be run by hand. The first time a user opens the app, their old fuel entries are copied into transactions, once. The old `fuelentries` collection is left untouched. Fuel now counts in Expenses, so if you used to add fuel as a separate expense as well, delete those manual expenses to avoid counting them twice.
+
+## Set up Google sign-in
+
+The app works without this: the Google button only appears once both keys are set.
+
+1. Open the [Google Cloud Console](https://console.cloud.google.com/) and create a project.
+2. Go to **APIs & Services > OAuth consent screen** and fill in the app name and your email. Add yourself as a test user, or publish the app so anyone can sign in.
+3. Go to **APIs & Services > Credentials > Create Credentials > OAuth client ID**, and choose **Web application**.
+4. Under **Authorized JavaScript origins**, add `http://localhost:3000` and your live address, such as `https://hisab-psi-seven.vercel.app`.
+5. Under **Authorized redirect URIs**, add both of these, with your own live address:
+   - `http://localhost:3000/api/auth/callback/google`
+   - `https://hisab-psi-seven.vercel.app/api/auth/callback/google`
+6. Copy the client ID and secret into `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, in `.env.local` and in Vercel's environment variables. Then redeploy.
+
+If someone already has a password account with the same email, Google will not log in to it automatically, because this app does not verify email addresses at sign-up and anyone could have registered that address. They log in with their password, then choose **Connect Google** in Profile.

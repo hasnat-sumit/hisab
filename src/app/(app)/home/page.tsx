@@ -1,29 +1,38 @@
-import { ArrowRight, Bike, ReceiptText } from "lucide-react";
+import { Bike, PiggyBank } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 
+import { AddBikeButton } from "@/components/bike/add-bike-button";
 import { AddFuelButton } from "@/components/bike/add-fuel-button";
+import { VehicleIcon } from "@/components/bike/bike-card";
+import { MileageBadge } from "@/components/bike/mileage-badge";
+import { CategoryBreakdown } from "@/components/category-breakdown";
 import { EmptyState } from "@/components/empty-state";
+import { AnalyticsLoader } from "@/components/home/analytics-loader";
+import { SavingsByYear } from "@/components/home/savings-by-year";
 import { MonthSwitcher } from "@/components/month-switcher";
 import { PageHeader } from "@/components/page-header";
 import { PageSkeleton } from "@/components/page-skeleton";
 import { SummaryCards } from "@/components/summary-cards";
 import { AddTransactionButton } from "@/components/transactions/add-transaction-button";
-import { TransactionRow } from "@/components/transactions/transaction-row";
-import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { getBikes, getFuelEntries } from "@/lib/data/bikes";
+import { getBikes, getVehicleExpenses } from "@/lib/data/bikes";
+import { getSettings } from "@/lib/data/settings";
+import { getFinanceRows } from "@/lib/data/transactions";
+import { formatMonth, resolveMonth } from "@/lib/dates";
 import {
-  getMonthSummary,
-  getRecentTransactions,
-  getUsedCategories,
-} from "@/lib/data/transactions";
-import { resolveMonth } from "@/lib/dates";
-import { formatNumber } from "@/lib/format";
+  categoryBreakdown,
+  periodSummary,
+  totalSavings,
+  usedCategories,
+} from "@/lib/finance";
+import { formatNumber, formatTaka } from "@/lib/format";
 import { fuelStats } from "@/lib/mileage";
 import { requireUser } from "@/lib/session";
+import type { BikeDTO, VehicleExpenseDTO } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { fuelEntriesFor, vehicleTotals } from "@/lib/vehicles";
 
 export const metadata: Metadata = { title: "Home" };
 
@@ -43,122 +52,158 @@ async function HomeContent({
   const user = await requireUser();
   const month = resolveMonth((await searchParams).month);
 
-  const [summary, recent, usedCategories, bikes] = await Promise.all([
-    getMonthSummary(user.id, month),
-    getRecentTransactions(user.id),
-    getUsedCategories(user.id, "expense"),
+  const [{ modules }, rows, bikes, records] = await Promise.all([
+    getSettings(user.id),
+    getFinanceRows(user.id),
     getBikes(user.id),
+    getVehicleExpenses(user.id),
   ]);
+  const vehicles = bikes.filter((bike) => !bike.archived);
+  const savings = totalSavings(rows);
 
   return (
-    <div className="space-y-6 max-md:pb-16">
+    <div className={cn("space-y-6", modules.finance && "max-md:pb-16")}>
       <PageHeader title={`Hi, ${user.name.split(" ")[0]}`}>
         <MonthSwitcher month={month} hrefFor={(m) => `/home?month=${m}`} />
       </PageHeader>
 
-      <SummaryCards summary={summary} />
+      {modules.finance && (
+        <>
+          <Card className="flex-row items-center gap-4 bg-accent p-4 ring-primary/15 sm:p-5">
+            <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-card text-accent-foreground">
+              <PiggyBank className="size-5" aria-hidden />
+            </span>
+            <div className="min-w-0">
+              <p className="text-sm text-muted-foreground">Total Savings</p>
+              <p
+                data-testid="total-savings"
+                className={cn(
+                  "text-2xl font-semibold tracking-tight wrap-anywhere sm:text-3xl",
+                  savings < 0 ? "text-expense" : "text-accent-foreground",
+                )}
+              >
+                {formatTaka(savings)}
+              </p>
+            </div>
+          </Card>
 
-      <AddTransactionButton
-        type="expense"
-        usedCategories={usedCategories}
-        floating
-      />
+          <SummaryCards summary={periodSummary(rows, month)} />
 
-      <div className="grid items-start gap-6 lg:grid-cols-2">
-        <Card className="gap-0 px-4 pt-4 pb-1">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold">Recent transactions</h2>
-            <Link
-              href="/expenses"
-              className="-my-2 flex min-h-10 items-center gap-1 text-xs font-medium text-primary md:my-0 md:min-h-0"
-            >
-              View all <ArrowRight className="size-3.5" aria-hidden />
-            </Link>
-          </div>
-          {recent.length === 0 ? (
-            <EmptyState
-              icon={ReceiptText}
-              title="No transactions yet"
-              description="Add your first expense to get started."
+          <AddTransactionButton
+            type="expense"
+            usedCategories={usedCategories(rows, "expense")}
+            floating
+          />
+        </>
+      )}
+
+      {modules.vehicles && vehicles.length > 0 && (
+        <section aria-label="Your vehicles" className="grid gap-3 sm:grid-cols-2">
+          {vehicles.map((bike) => (
+            <VehicleCard
+              key={bike.id}
+              bike={bike}
+              bikes={bikes}
+              records={records}
+              month={month}
             />
-          ) : (
-            <ul className="divide-y">
-              {recent.map((transaction) => (
-                <TransactionRow
-                  key={transaction.id}
-                  transaction={transaction}
-                />
-              ))}
-            </ul>
-          )}
-        </Card>
+          ))}
+        </section>
+      )}
 
-        <BikeSummary userId={user.id} bikes={bikes} />
-      </div>
+      {!modules.finance && vehicles.length === 0 && (
+        <Card>
+          <EmptyState
+            icon={Bike}
+            title="Add your first vehicle"
+            description="Then log fuel and expenses to see your mileage and running costs."
+          >
+            <AddBikeButton variant="default" />
+          </EmptyState>
+        </Card>
+      )}
+
+      {modules.finance && (
+        <>
+          <div className="grid items-start gap-3 md:grid-cols-2">
+            <CategoryBreakdown
+              type="income"
+              breakdown={categoryBreakdown(rows, month, "income")}
+              periodLabel={formatMonth(month)}
+            />
+            <CategoryBreakdown
+              type="expense"
+              breakdown={categoryBreakdown(rows, month, "expense")}
+              periodLabel={formatMonth(month)}
+            />
+          </div>
+
+          <SavingsByYear rows={rows} initialYear={month.slice(0, 4)} />
+
+          {modules.analytics && (
+            <AnalyticsLoader rows={rows} initialYear={month.slice(0, 4)} />
+          )}
+        </>
+      )}
     </div>
   );
 }
 
-async function BikeSummary({
-  userId,
+function VehicleCard({
+  bike,
   bikes,
+  records,
+  month,
 }: {
-  userId: string;
-  bikes: Awaited<ReturnType<typeof getBikes>>;
+  bike: BikeDTO;
+  bikes: BikeDTO[];
+  records: VehicleExpenseDTO[];
+  month: string;
 }) {
-  const bike = bikes.find((b) => b.isDefault) ?? bikes[0];
-
-  if (!bike) {
-    return (
-      <Card className="gap-0 p-4">
-        <h2 className="font-semibold">Your bike</h2>
-        <EmptyState
-          icon={Bike}
-          title="No bike added"
-          description="Add a bike to track fuel and mileage."
-        >
-          <Link
-            href="/bike"
-            className={cn(buttonVariants({ variant: "outline" }))}
-          >
-            Go to Bike
-          </Link>
-        </EmptyState>
-      </Card>
-    );
-  }
-
-  const stats = fuelStats(await getFuelEntries(userId, bike.id));
+  const stats = fuelStats(fuelEntriesFor(records, bike.id));
+  const monthly = vehicleTotals(records, month, bike.id);
   return (
-    <Card className="gap-4 p-4">
-      <div className="flex items-center gap-3">
+    <Card className="gap-3 p-4">
+      <Link
+        href={`/bike?bike=${bike.id}&month=${month}`}
+        className="flex items-center gap-3 rounded-lg"
+      >
         <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground">
-          <Bike className="size-5" aria-hidden />
+          <VehicleIcon type={bike.vehicleType} className="size-5" />
         </span>
+        <h2 className="min-w-0 truncate font-semibold">{bike.name}</h2>
+      </Link>
+      <dl className="grid grid-cols-3 gap-2 text-sm">
         <div className="min-w-0">
-          <h2 className="truncate font-semibold">{bike.name}</h2>
-          <p className="text-xs text-muted-foreground">Default bike</p>
-        </div>
-      </div>
-      <dl className="grid grid-cols-2 gap-3">
-        <div className="rounded-lg bg-muted p-3">
-          <dt className="text-xs text-muted-foreground">Latest odometer</dt>
-          <dd className="font-semibold tabular-nums">
+          <dt className="text-xs text-muted-foreground">Odometer</dt>
+          <dd className="font-semibold tabular-nums wrap-anywhere">
             {stats.latestOdometer === null
               ? "–"
               : `${formatNumber(stats.latestOdometer)} km`}
           </dd>
         </div>
-        <div className="rounded-lg bg-muted p-3">
-          <dt className="text-xs text-muted-foreground">Average mileage</dt>
-          <dd className="font-semibold tabular-nums">
+        <div className="min-w-0">
+          <dt className="text-xs text-muted-foreground">Mileage</dt>
+          <dd className="font-semibold tabular-nums wrap-anywhere">
             {stats.averageMileage === null
               ? "–"
               : `${stats.averageMileage.toFixed(1)} km/L`}
           </dd>
+          <MileageBadge quality={stats.mileageQuality} />
+        </div>
+        <div className="min-w-0">
+          <dt className="text-xs text-muted-foreground">This month</dt>
+          <dd className="font-semibold text-expense tabular-nums wrap-anywhere">
+            {formatTaka(monthly.total)}
+          </dd>
         </div>
       </dl>
-      <AddFuelButton bikes={bikes} bikeId={bike.id} variant="outline" />
+      <AddFuelButton
+        bikes={bikes}
+        bikeId={bike.id}
+        vehicleName={bike.name}
+        variant="outline"
+      />
     </Card>
   );
 }

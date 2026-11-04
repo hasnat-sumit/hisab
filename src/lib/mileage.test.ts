@@ -55,6 +55,7 @@ describe("fuelStats", () => {
       totalDistance: 0,
       totalFuelCost: 0,
       averageMileage: null,
+      mileageQuality: null,
       costPerKm: null,
     });
   });

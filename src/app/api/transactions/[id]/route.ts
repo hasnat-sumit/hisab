@@ -1,4 +1,4 @@
-import { isObjectId, notFound, parseBody, withUser } from "@/lib/api";
+import { ApiError, isObjectId, notFound, parseBody, withUser } from "@/lib/api";
 import { toDate } from "@/lib/dates";
 import { Transaction } from "@/lib/models/transaction";
 import { transactionSchema } from "@/lib/validators";
@@ -14,12 +14,18 @@ export const PATCH = withUser<Params>(async ({ request, user, params }) => {
     userId: user.id,
   });
   if (!transaction) throw notFound("Transaction");
+  if (transaction.bikeId) {
+    // Vehicle records keep extra rules, which their own routes apply.
+    throw new ApiError(409, "Edit this expense from its vehicle.");
+  }
 
   transaction.type = data.type;
   transaction.date = toDate(data.date);
   transaction.category = data.category;
   transaction.amount = data.amount;
   transaction.note = data.note;
+  transaction.paymentMethod = data.type === "expense" ? data.paymentMethod : undefined;
+  transaction.recurring = data.type === "expense" ? data.recurring : undefined;
   await transaction.save();
   return Response.json({ id: transaction.id });
 });

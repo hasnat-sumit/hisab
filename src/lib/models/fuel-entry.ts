@@ -1,5 +1,9 @@
-import mongoose, { Schema, type Model, type Types } from "mongoose";
+import { Schema, type Types } from "mongoose";
 
+import { defineModel } from "./define-model";
+
+// The old home of fuel records. New fill-ups are saved as transactions; this is
+// only read to copy existing entries across, and nothing here is deleted.
 export type FuelEntryDoc = {
   userId: string;
   bikeId: Types.ObjectId;
@@ -29,6 +33,4 @@ fuelEntrySchema.index(
   { unique: true },
 );
 
-export const FuelEntry: Model<FuelEntryDoc> =
-  mongoose.models.FuelEntry ??
-  mongoose.model<FuelEntryDoc>("FuelEntry", fuelEntrySchema);
+export const FuelEntry = defineModel("FuelEntry", fuelEntrySchema);

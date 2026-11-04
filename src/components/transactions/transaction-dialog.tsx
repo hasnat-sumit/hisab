@@ -3,13 +3,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 
 import { FormField } from "@/components/form-field";
+import { PaymentMethodField } from "@/components/payment-method-field";
 import { SubmitButton } from "@/components/submit-button";
 import { CategoryField } from "@/components/transactions/category-field";
+import { MonthPreview } from "@/components/transactions/month-preview";
 import {
   Dialog,
   DialogContent,
@@ -54,8 +56,16 @@ function TransactionForm({
       category: transaction?.category ?? "",
       amount: transaction ? String(transaction.amount) : "",
       note: transaction?.note ?? "",
+      paymentMethod: transaction?.paymentMethod ?? "",
+      recurring: transaction?.recurring ?? false,
     },
   });
+  const [date, category, amount] = useWatch({
+    control,
+    name: ["date", "category", "amount"],
+  });
+  const month = date.slice(0, 7);
+  const typedAmount = Number(amount);
 
   async function onSubmit(values: FormOutput) {
     try {
@@ -73,7 +83,11 @@ function TransactionForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4" noValidate>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="grid grid-cols-1 gap-4"
+      noValidate
+    >
       <FormField id="tx-date" label="Date" error={errors.date?.message}>
         <Input
           id="tx-date"
@@ -136,6 +150,48 @@ function TransactionForm({
           Add a note
         </button>
       )}
+
+      {type === "expense" && (
+        <>
+          <FormField
+            id="tx-payment"
+            label="Payment method"
+            error={errors.paymentMethod?.message}
+          >
+            <Controller
+              control={control}
+              name="paymentMethod"
+              render={({ field }) => (
+                <PaymentMethodField
+                  id="tx-payment"
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                />
+              )}
+            />
+          </FormField>
+          <label className="flex min-h-10 items-center gap-3 text-sm">
+            <input
+              type="checkbox"
+              className="size-5 accent-primary"
+              {...register("recurring")}
+            />
+            This is a recurring expense
+          </label>
+        </>
+      )}
+
+      <MonthPreview
+        month={month}
+        type={type}
+        category={category}
+        amount={Number.isFinite(typedAmount) ? typedAmount : undefined}
+        original={
+          transaction?.date.startsWith(month)
+            ? { category: transaction.category, amount: transaction.amount }
+            : undefined
+        }
+      />
 
       <SubmitButton pending={isSubmitting}>
         {transaction

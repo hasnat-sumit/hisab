@@ -2,10 +2,11 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 
+import { ChoiceChips } from "@/components/choice-chips";
 import { FormField } from "@/components/form-field";
 import { SubmitButton } from "@/components/submit-button";
 import {
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { apiFetch, showFormError } from "@/lib/api-client";
+import { VEHICLE_TYPES } from "@/lib/constants";
 import type { BikeDTO } from "@/lib/types";
 import { bikeSchema } from "@/lib/validators";
 
@@ -26,6 +28,7 @@ function BikeForm({ bike, onDone }: { bike?: BikeDTO; onDone: () => void }) {
   const router = useRouter();
   const {
     register,
+    control,
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
@@ -33,6 +36,7 @@ function BikeForm({ bike, onDone }: { bike?: BikeDTO; onDone: () => void }) {
     resolver: zodResolver(bikeSchema),
     defaultValues: {
       name: bike?.name ?? "",
+      vehicleType: bike?.vehicleType ?? "bike",
       brand: bike?.brand ?? "",
       model: bike?.model ?? "",
       registrationNumber: bike?.registrationNumber ?? "",
@@ -46,7 +50,7 @@ function BikeForm({ bike, onDone }: { bike?: BikeDTO; onDone: () => void }) {
         method: bike ? "PATCH" : "POST",
         body: values,
       });
-      toast.success(bike ? "Bike updated" : "Bike added");
+      toast.success(bike ? "Vehicle updated" : "Vehicle added");
       onDone();
       router.refresh();
     } catch (error) {
@@ -56,10 +60,29 @@ function BikeForm({ bike, onDone }: { bike?: BikeDTO; onDone: () => void }) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4" noValidate>
-      <FormField id="bike-name" label="Bike name" error={errors.name?.message}>
+      <FormField
+        id="bike-type"
+        label="Vehicle type"
+        error={errors.vehicleType?.message}
+      >
+        <Controller
+          control={control}
+          name="vehicleType"
+          render={({ field }) => (
+            <ChoiceChips
+              id="bike-type"
+              label="Vehicle type"
+              value={field.value ?? "bike"}
+              onChange={field.onChange}
+              options={VEHICLE_TYPES}
+            />
+          )}
+        />
+      </FormField>
+      <FormField id="bike-name" label="Vehicle name" error={errors.name?.message}>
         <Input
           id="bike-name"
-          placeholder="e.g. My Pulsar"
+          placeholder="e.g. Honda Hornet 2.0"
           aria-invalid={Boolean(errors.name) || undefined}
           {...register("name")}
         />
@@ -95,7 +118,7 @@ function BikeForm({ bike, onDone }: { bike?: BikeDTO; onDone: () => void }) {
         />
       </FormField>
       <SubmitButton pending={isSubmitting}>
-        {bike ? "Save changes" : "Add bike"}
+        {bike ? "Save changes" : "Add vehicle"}
       </SubmitButton>
     </form>
   );
@@ -114,7 +137,7 @@ export function BikeDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{bike ? "Edit bike" : "Add a bike"}</DialogTitle>
+          <DialogTitle>{bike ? "Edit vehicle" : "Add a vehicle"}</DialogTitle>
         </DialogHeader>
         <BikeForm bike={bike} onDone={() => onOpenChange(false)} />
       </DialogContent>

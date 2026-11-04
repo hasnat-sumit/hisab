@@ -1,6 +1,7 @@
-import mongoose, { Schema, type Model, type Types } from "mongoose";
+import { Schema, type Types } from "mongoose";
 
 import { DOCUMENT_TYPE_VALUES, type DocumentType } from "../constants";
+import { defineModel } from "./define-model";
 
 export type BikeDocumentDoc = {
   userId: string;
@@ -28,6 +29,4 @@ const bikeDocumentSchema = new Schema<BikeDocumentDoc>({
 
 bikeDocumentSchema.index({ userId: 1, uploadedAt: -1 });
 
-export const BikeDocument: Model<BikeDocumentDoc> =
-  mongoose.models.BikeDocument ??
-  mongoose.model<BikeDocumentDoc>("BikeDocument", bikeDocumentSchema);
+export const BikeDocument = defineModel("BikeDocument", bikeDocumentSchema);

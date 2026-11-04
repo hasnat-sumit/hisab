@@ -16,7 +16,7 @@ export function AddBikeButton({
     <>
       <Button variant={variant} onClick={() => setOpen(true)}>
         <Plus aria-hidden />
-        Add Bike
+        Add Vehicle
       </Button>
       <BikeDialog open={open} onOpenChange={setOpen} />
     </>

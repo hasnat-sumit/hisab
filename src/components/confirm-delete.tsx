@@ -25,6 +25,7 @@ export function ConfirmDelete({
   title,
   description,
   successMessage,
+  afterDeleteHref,
 }: {
   url: string;
   /** Names the item for screen readers, e.g. "Delete Food expense". */
@@ -32,6 +33,8 @@ export function ConfirmDelete({
   title: string;
   description: string;
   successMessage: string;
+  /** Where to go next, when the current page was about the deleted item. */
+  afterDeleteHref?: string;
 }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -43,6 +46,7 @@ export function ConfirmDelete({
       await apiFetch(url, { method: "DELETE" });
       toast.success(successMessage);
       setOpen(false);
+      if (afterDeleteHref) router.push(afterDeleteHref, { scroll: false });
       router.refresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not delete.");

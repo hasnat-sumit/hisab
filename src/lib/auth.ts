@@ -6,6 +6,10 @@ import type { Db } from "mongodb";
 
 import { getMongoClient, MissingConfigError } from "./db";
 
+export function googleSignInEnabled(): boolean {
+  return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+}
+
 function vercelUrl(host: string | undefined): string | undefined {
   return host ? `https://${host}` : undefined;
 }
@@ -21,6 +25,8 @@ function createAuth() {
   const client = getMongoClient();
   const db = client.db();
   void ensureAuthIndexes(db);
+  const googleClientId = process.env.GOOGLE_CLIENT_ID;
+  const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
   return betterAuth({
     secret,
@@ -35,6 +41,30 @@ function createAuth() {
       enabled: true,
       minPasswordLength: 8,
       maxPasswordLength: 128,
+    },
+    ...(googleClientId && googleClientSecret
+      ? {
+          socialProviders: {
+            google: {
+              clientId: googleClientId,
+              clientSecret: googleClientSecret,
+            },
+          },
+        }
+      : {}),
+    account: {
+      accountLinking: {
+        enabled: true,
+        // Nobody proves they own an email when signing up with a password, so
+        // a Google login must not silently join an account someone else may
+        // have made with that address. The owner connects Google from Profile.
+        disableImplicitLinking: true,
+      },
+    },
+    session: {
+      // Most page views check the session from a signed cookie, not the
+      // database. A session revoked elsewhere ends within this many seconds.
+      cookieCache: { enabled: true, maxAge: 120 },
     },
     rateLimit: {
       enabled: true,
@@ -72,6 +102,8 @@ export function getAuth() {
     process.env.MONGODB_URI,
     process.env.BETTER_AUTH_SECRET,
     process.env.BETTER_AUTH_URL,
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
   ]);
   if (auth?.settings !== settings) {
     auth = { settings, instance: createAuth() };
