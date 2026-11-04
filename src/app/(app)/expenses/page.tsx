@@ -1,0 +1,138 @@
+import { ReceiptText } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { Suspense } from "react";
+
+import { EmptyState } from "@/components/empty-state";
+import { MonthSwitcher } from "@/components/month-switcher";
+import { PageHeader } from "@/components/page-header";
+import { PageSkeleton } from "@/components/page-skeleton";
+import { SummaryCards } from "@/components/summary-cards";
+import { AddTransactionButton } from "@/components/transactions/add-transaction-button";
+import { CategoryFilter } from "@/components/transactions/category-filter";
+import { TransactionActions } from "@/components/transactions/transaction-actions";
+import { TransactionRow } from "@/components/transactions/transaction-row";
+import { Card } from "@/components/ui/card";
+import { categoryOptions, type TransactionType } from "@/lib/constants";
+import {
+  getMonthSummary,
+  getUsedCategories,
+  listTransactions,
+} from "@/lib/data/transactions";
+import { formatMonth, resolveMonth } from "@/lib/dates";
+import { requireUser } from "@/lib/session";
+import { cn } from "@/lib/utils";
+
+export const metadata: Metadata = { title: "Expenses" };
+
+const TABS: { type: TransactionType; label: string }[] = [
+  { type: "expense", label: "Expenses" },
+  { type: "income", label: "Income" },
+];
+
+function pageHref(type: TransactionType, month: string): string {
+  return `/expenses?type=${type}&month=${month}`;
+}
+
+export default function ExpensesPage({
+  searchParams,
+}: PageProps<"/expenses">) {
+  return (
+    <Suspense fallback={<PageSkeleton />}>
+      <ExpensesContent searchParams={searchParams} />
+    </Suspense>
+  );
+}
+
+async function ExpensesContent({
+  searchParams,
+}: {
+  searchParams: PageProps<"/expenses">["searchParams"];
+}) {
+  const user = await requireUser();
+  const params = await searchParams;
+  const type: TransactionType = params.type === "income" ? "income" : "expense";
+  const month = resolveMonth(params.month);
+  const category =
+    typeof params.category === "string" && params.category
+      ? params.category
+      : undefined;
+
+  const [summary, transactions, usedCategories] = await Promise.all([
+    getMonthSummary(user.id, month),
+    listTransactions(user.id, { type, month, category }),
+    getUsedCategories(user.id, type),
+  ]);
+  const noun = type === "income" ? "income" : "expenses";
+
+  return (
+    <div className="space-y-6 max-md:pb-16">
+      <PageHeader title="Expenses">
+        <MonthSwitcher month={month} hrefFor={(m) => pageHref(type, m)} />
+      </PageHeader>
+
+      <SummaryCards summary={summary} />
+
+      <div
+        role="navigation"
+        aria-label="Transaction type"
+        className="grid grid-cols-2 gap-1 rounded-xl bg-muted p-1 sm:max-w-xs"
+      >
+        {TABS.map((tab) => {
+          const active = tab.type === type;
+          return (
+            <Link
+              key={tab.type}
+              href={pageHref(tab.type, month)}
+              scroll={false}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "flex h-10 items-center justify-center rounded-lg text-sm font-medium transition-colors md:h-9",
+                active
+                  ? "bg-card text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {tab.label}
+            </Link>
+          );
+        })}
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <CategoryFilter
+          key={`${type}-${category ?? "all"}`}
+          baseHref={pageHref(type, month)}
+          category={category}
+          categories={categoryOptions(type, usedCategories)}
+        />
+        <AddTransactionButton
+          type={type}
+          usedCategories={usedCategories}
+          floating
+        />
+      </div>
+
+      <Card className="px-4 py-1">
+        {transactions.length === 0 ? (
+          <EmptyState
+            icon={ReceiptText}
+            title={category ? `No ${category} ${noun}` : `No ${noun} yet`}
+            description={`Nothing recorded for ${formatMonth(month)}.`}
+          />
+        ) : (
+          <ul className="divide-y">
+            {transactions.map((transaction) => (
+              <TransactionRow key={transaction.id} transaction={transaction}>
+                <TransactionActions
+                  transaction={transaction}
+                  usedCategories={usedCategories}
+                />
+              </TransactionRow>
+            ))}
+          </ul>
+        )}
+      </Card>
+    </div>
+  );
+}
