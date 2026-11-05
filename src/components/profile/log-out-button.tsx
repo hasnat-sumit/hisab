@@ -23,7 +23,11 @@ export function LogOutButton() {
   }
 
   return (
-    <Button variant="ghost" disabled={pending} onClick={logOut}>
+    <Button
+      disabled={pending}
+      onClick={logOut}
+      className="bg-destructive text-primary-foreground hover:bg-destructive/85"
+    >
       {pending ? (
         <Loader2 className="animate-spin" aria-hidden />
       ) : (

@@ -107,7 +107,7 @@ Keep the app close to the database, because every page view talks to it. `vercel
 
 A vehicle with expense records cannot be deleted, because those records are part of your financial history. Archive it instead: it leaves your lists, but its expenses still count in your totals, and you can restore it at any time. A vehicle with no records can be deleted.
 
-Turning a module off in **Profile** only hides it. No data is changed or removed.
+Turning a module off in **Settings** only hides it. No data is changed or removed.
 
 ### Upgrading from an earlier version
 

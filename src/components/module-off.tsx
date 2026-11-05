@@ -16,7 +16,7 @@ export function ModuleOff({ name }: { name: string }) {
         description="Your records are safe. Turn it back on any time in your settings."
       >
         <Link
-          href="/profile"
+          href="/settings"
           className={cn(buttonVariants({ variant: "outline" }))}
         >
           Go to settings

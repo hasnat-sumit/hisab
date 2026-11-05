@@ -1,5 +1,7 @@
+import { ChevronRight, Settings } from "lucide-react";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
+import Link from "next/link";
 import { Suspense } from "react";
 
 import { PageHeader } from "@/components/page-header";
@@ -9,8 +11,6 @@ import { ConnectGoogleButton } from "@/components/profile/connect-google-button"
 import { DocumentList } from "@/components/profile/document-list";
 import { EditNameForm } from "@/components/profile/edit-name-form";
 import { LogOutButton } from "@/components/profile/log-out-button";
-import { ModuleSettingsForm } from "@/components/profile/module-settings-form";
-import { ThemeSelector } from "@/components/profile/theme-selector";
 import { UploadDocumentButton } from "@/components/profile/upload-document-button";
 import { Card } from "@/components/ui/card";
 import { getAuth, googleSignInEnabled } from "@/lib/auth";
@@ -79,22 +79,6 @@ async function ProfileContent() {
         </div>
       </Card>
 
-      <Card className="gap-3 p-4">
-        <h2 className="font-semibold">Theme</h2>
-        <ThemeSelector theme={settings.theme} />
-      </Card>
-
-      <Card className="gap-3 p-4">
-        <div>
-          <h2 className="font-semibold">Customize Your Dashboard</h2>
-          <p className="text-xs text-muted-foreground">
-            Choose what you see. Turning something off only hides it, and your
-            records stay safe.
-          </p>
-        </div>
-        <ModuleSettingsForm modules={settings.modules} />
-      </Card>
-
       {settings.modules.vehicles && (
         <Card className="gap-2 px-4 pt-4 pb-1">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -109,6 +93,20 @@ async function ProfileContent() {
           <DocumentList documents={documents} />
         </Card>
       )}
+
+      <Link
+        href="/settings"
+        className="flex min-h-14 items-center gap-3 rounded-xl border bg-card px-4 py-2 transition-colors hover:bg-muted active:bg-muted"
+      >
+        <Settings className="size-5 shrink-0 text-muted-foreground" aria-hidden />
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-medium">Settings</span>
+          <span className="block text-xs text-muted-foreground">
+            Theme and dashboard
+          </span>
+        </span>
+        <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+      </Link>
 
       <div className="flex justify-center">
         <LogOutButton />

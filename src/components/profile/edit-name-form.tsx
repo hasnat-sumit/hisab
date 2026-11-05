@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useController, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 
@@ -17,13 +17,16 @@ type FormValues = z.infer<typeof profileSchema>;
 export function EditNameForm({ name, email }: { name: string; email: string }) {
   const router = useRouter();
   const {
-    register,
+    control,
     handleSubmit,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<FormValues>({
     resolver: zodResolver(profileSchema),
     values: { name },
   });
+  // Controlled, so the name is in the first HTML. With register() the box starts
+  // empty and the name is written in on load, on top of anything already typed.
+  const { field } = useController({ name: "name", control });
 
   async function onSubmit(values: FormValues) {
     const { error } = await authClient.updateUser({ name: values.name });
@@ -42,7 +45,7 @@ export function EditNameForm({ name, email }: { name: string; email: string }) {
           id="profile-name"
           autoComplete="name"
           aria-invalid={Boolean(errors.name) || undefined}
-          {...register("name")}
+          {...field}
         />
       </FormField>
       <FormField id="profile-email" label="Email">
