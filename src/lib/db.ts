@@ -39,10 +39,15 @@ export function getMongoClient(): MongoClient {
   // A client keeps its address for life, so a changed address needs a new one.
   if (cache.hisabAuthClient?.uri !== uri) {
     void cache.hisabAuthClient?.client.close().catch(() => {});
-    cache.hisabAuthClient = {
-      uri,
-      client: new MongoClient(uri, { maxPoolSize: 5 }),
-    };
+    const entry = { uri, client: new MongoClient(uri, { maxPoolSize: 5 }) };
+    cache.hisabAuthClient = entry;
+    // A client whose first connection fails stays closed for good, so one brief
+    // network failure would break every later request. The next one gets a new client.
+    entry.client.connect().catch((error) => {
+      console.error("Could not connect to MongoDB:", error);
+      if (cache.hisabAuthClient === entry) cache.hisabAuthClient = undefined;
+    });
+    return entry.client;
   }
   return cache.hisabAuthClient.client;
 }

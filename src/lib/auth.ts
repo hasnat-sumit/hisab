@@ -2,7 +2,7 @@ import "server-only";
 
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
-import type { Db } from "mongodb";
+import type { Db, MongoClient } from "mongodb";
 
 import { getMongoClient, MissingConfigError } from "./db";
 
@@ -14,7 +14,7 @@ function vercelUrl(host: string | undefined): string | undefined {
   return host ? `https://${host}` : undefined;
 }
 
-function createAuth() {
+function createAuth(client: MongoClient) {
   const secret = process.env.BETTER_AUTH_SECRET;
   if (!secret) {
     throw new MissingConfigError(
@@ -22,7 +22,6 @@ function createAuth() {
     );
   }
 
-  const client = getMongoClient();
   const db = client.db();
   void ensureAuthIndexes(db);
   const googleClientId = process.env.GOOGLE_CLIENT_ID;
@@ -92,12 +91,18 @@ async function ensureAuthIndexes(db: Db): Promise<void> {
 }
 
 let auth:
-  | { settings: string; instance: ReturnType<typeof createAuth> }
+  | {
+      settings: string;
+      client: MongoClient;
+      instance: ReturnType<typeof createAuth>;
+    }
   | undefined;
 
 // Created on first use, so builds work before the environment is configured.
-// Rebuilt if the settings change, so editing .env.local takes effect at once.
+// Rebuilt if the settings change, so editing .env.local takes effect at once,
+// and if the database client was replaced after failing to connect.
 export function getAuth() {
+  const client = getMongoClient();
   const settings = JSON.stringify([
     process.env.MONGODB_URI,
     process.env.BETTER_AUTH_SECRET,
@@ -105,8 +110,8 @@ export function getAuth() {
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
   ]);
-  if (auth?.settings !== settings) {
-    auth = { settings, instance: createAuth() };
+  if (auth?.settings !== settings || auth.client !== client) {
+    auth = { settings, client, instance: createAuth(client) };
   }
   return auth.instance;
 }
