@@ -141,7 +141,7 @@ async function HomeContent({
           <SavingsByYear rows={rows} initialYear={month.slice(0, 4)} />
 
           {modules.analytics && (
-            <AnalyticsLoader rows={rows} initialYear={month.slice(0, 4)} />
+            <AnalyticsLoader rows={rows} initialMonth={month} />
           )}
         </>
       )}

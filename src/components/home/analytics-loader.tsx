@@ -22,7 +22,7 @@ const Analytics = dynamic(
 
 export function AnalyticsLoader(props: {
   rows: FinanceRow[];
-  initialYear: string;
+  initialMonth: string;
 }) {
   return <Analytics {...props} />;
 }
