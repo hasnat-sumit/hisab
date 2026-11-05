@@ -15,7 +15,7 @@ export function ConnectGoogleButton() {
     setPending(true);
     const { error } = await authClient.linkSocial({
       provider: "google",
-      callbackURL: "/profile",
+      callbackURL: "/settings",
     });
     if (error) {
       toast.error(error.message ?? "Could not connect Google.");

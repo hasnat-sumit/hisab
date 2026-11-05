@@ -14,7 +14,7 @@ import { profileSchema } from "@/lib/validators";
 
 type FormValues = z.infer<typeof profileSchema>;
 
-export function EditNameForm({ name, email }: { name: string; email: string }) {
+export function EditNameForm({ name }: { name: string }) {
   const router = useRouter();
   const {
     control,
@@ -47,9 +47,6 @@ export function EditNameForm({ name, email }: { name: string; email: string }) {
           aria-invalid={Boolean(errors.name) || undefined}
           {...field}
         />
-      </FormField>
-      <FormField id="profile-email" label="Email">
-        <Input id="profile-email" value={email} readOnly disabled />
       </FormField>
       {isDirty && (
         <Button type="submit" disabled={isSubmitting} className="justify-self-start">

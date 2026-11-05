@@ -57,7 +57,7 @@ function createAuth() {
         enabled: true,
         // Nobody proves they own an email when signing up with a password, so
         // a Google login must not silently join an account someone else may
-        // have made with that address. The owner connects Google from Profile.
+        // have made with that address. The owner connects Google from Settings.
         disableImplicitLinking: true,
       },
     },

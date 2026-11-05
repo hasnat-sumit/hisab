@@ -126,4 +126,4 @@ The app works without this: the Google button only appears once both keys are se
    - `https://hisab-psi-seven.vercel.app/api/auth/callback/google`
 6. Copy the client ID and secret into `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, in `.env.local` and in Vercel's environment variables. Then redeploy.
 
-If someone already has a password account with the same email, Google will not log in to it automatically, because this app does not verify email addresses at sign-up and anyone could have registered that address. They log in with their password, then choose **Connect Google** in Profile.
+If someone already has a password account with the same email, Google will not log in to it automatically, because this app does not verify email addresses at sign-up and anyone could have registered that address. They log in with their password, then choose **Connect Google** in Settings.

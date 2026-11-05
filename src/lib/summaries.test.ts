@@ -14,7 +14,11 @@ import {
 } from "./finance";
 import { formatCompactTaka } from "./format";
 import type { VehicleExpenseDTO } from "./types";
-import { transactionSchema, vehicleExpenseSchema } from "./validators";
+import {
+  changeEmailSchema,
+  transactionSchema,
+  vehicleExpenseSchema,
+} from "./validators";
 import { vehicleTotals } from "./vehicles";
 
 const row = (
@@ -174,6 +178,20 @@ test("vehicle expenses need a vehicle and a type other than fuel", () => {
   assert.equal(parse({ expenseType: "" }), false);
   assert.equal(parse({ expenseType: "x".repeat(41) }), false);
   assert.equal(parse({ expenseType: "Car wash" }), true);
+});
+
+test("changing email needs matching addresses and the current password", () => {
+  const form = {
+    newEmail: " New@Example.com ",
+    confirmEmail: "new@example.COM",
+    currentPassword: "secret",
+  };
+  assert.equal(changeEmailSchema.parse(form).newEmail, "new@example.com");
+  const fails = (extra: object) =>
+    !changeEmailSchema.safeParse({ ...form, ...extra }).success;
+  assert.equal(fails({ confirmEmail: "other@example.com" }), true);
+  assert.equal(fails({ newEmail: "not-an-email", confirmEmail: "not-an-email" }), true);
+  assert.equal(fails({ currentPassword: "" }), true);
 });
 
 test("a typed vehicle expense type matches a built-in one by name", () => {

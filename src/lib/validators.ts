@@ -201,6 +201,23 @@ export const profileSchema = z.object({
     .max(60, "Keep the name under 60 characters."),
 });
 
+export const changeEmailSchema = z
+  .object({
+    newEmail: z
+      .string({ error: "Enter a valid email address." })
+      .trim()
+      .toLowerCase()
+      .pipe(z.email("Enter a valid email address.")),
+    confirmEmail: z.string({ error: "Type the new email again." }).trim().toLowerCase(),
+    currentPassword: z
+      .string({ error: "Enter your current password." })
+      .min(1, "Enter your current password."),
+  })
+  .refine((data) => data.newEmail === data.confirmEmail, {
+    path: ["confirmEmail"],
+    message: "The two emails do not match.",
+  });
+
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, "Enter your current password."),
   newPassword,

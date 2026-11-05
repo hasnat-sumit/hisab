@@ -1,19 +1,14 @@
 import { ChevronRight, Settings } from "lucide-react";
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import Link from "next/link";
 import { Suspense } from "react";
 
 import { PageHeader } from "@/components/page-header";
 import { PageSkeleton } from "@/components/page-skeleton";
-import { ChangePasswordButton } from "@/components/profile/change-password-button";
-import { ConnectGoogleButton } from "@/components/profile/connect-google-button";
 import { DocumentList } from "@/components/profile/document-list";
-import { EditNameForm } from "@/components/profile/edit-name-form";
 import { LogOutButton } from "@/components/profile/log-out-button";
 import { UploadDocumentButton } from "@/components/profile/upload-document-button";
 import { Card } from "@/components/ui/card";
-import { getAuth, googleSignInEnabled } from "@/lib/auth";
 import { getBikes } from "@/lib/data/bikes";
 import { getDocuments } from "@/lib/data/documents";
 import { getSettings } from "@/lib/data/settings";
@@ -31,17 +26,13 @@ export default function ProfilePage() {
 
 async function ProfileContent() {
   const user = await requireUser();
-  const requestHeaders = await headers();
-  const [settings, bikes, accounts] = await Promise.all([
+  const [settings, bikes] = await Promise.all([
     getSettings(user.id),
     getBikes(user.id),
-    getAuth().api.listUserAccounts({ headers: requestHeaders }),
   ]);
   const documents = settings.modules.vehicles
     ? await getDocuments(user.id, bikes)
     : [];
-  const hasPassword = accounts.some((a) => a.providerId === "credential");
-  const hasGoogle = accounts.some((a) => a.providerId === "google");
 
   return (
     <div className="space-y-6">
@@ -60,22 +51,6 @@ async function ProfileContent() {
             <p className="truncate font-semibold">{user.name}</p>
             <p className="truncate text-sm text-muted-foreground">{user.email}</p>
           </div>
-        </div>
-        <EditNameForm name={user.name} email={user.email} />
-        <div className="flex flex-wrap items-center gap-2 border-t pt-4">
-          {hasPassword ? (
-            <ChangePasswordButton />
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              You sign in with Google, so there is no password to change.
-            </p>
-          )}
-          {googleSignInEnabled() &&
-            (hasGoogle ? (
-              <p className="text-sm text-muted-foreground">Google is connected.</p>
-            ) : (
-              <ConnectGoogleButton />
-            ))}
         </div>
       </Card>
 
@@ -102,7 +77,7 @@ async function ProfileContent() {
         <span className="min-w-0 flex-1">
           <span className="block text-sm font-medium">Settings</span>
           <span className="block text-xs text-muted-foreground">
-            Theme and dashboard
+            Name, email, password, theme and dashboard
           </span>
         </span>
         <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden />
