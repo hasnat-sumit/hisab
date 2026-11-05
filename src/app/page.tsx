@@ -81,9 +81,9 @@ export default function LandingPage() {
             your vehicles&apos; fuel and mileage.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <Link href="/signup" className={buttonVariants({ size: "lg" })}>
+            {/* <Link href="/signup" className={buttonVariants({ size: "lg" })}>
               Get started <ArrowRight aria-hidden />
-            </Link>
+            </Link> */}
             <Link
               href="/login"
               className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
@@ -93,7 +93,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        <section
+        {/* <section
           id="features"
           aria-labelledby="features-heading"
           className="scroll-mt-16 border-t bg-muted/40"
@@ -121,27 +121,31 @@ export default function LandingPage() {
               ))}
             </ul>
           </div>
-        </section>
+        </section> */}
       </main>
 
       <footer className="border-t bg-card pb-[env(safe-area-inset-bottom)]">
         <div className="mx-auto flex w-full max-w-5xl flex-col items-center justify-between gap-3 px-4 py-6 text-sm text-muted-foreground sm:flex-row md:px-8">
           <p className="text-center sm:text-left">
-            হিসাব-Hisab: personal finance and vehicle tracker
+            হিসাব-Hisab 
+            <br />Personal finance and vehicle management app
           </p>
-          <nav aria-label="Footer" className="flex gap-4">
+          <nav
+            aria-label="Footer"
+            className="flex flex-wrap justify-center gap-x-4"
+          >
             <Link
-              href="/login"
+              href="/contact"
               className="flex min-h-10 min-w-11 items-center justify-center hover:text-foreground"
             >
-              Log in
+              Contact
             </Link>
-            <Link
-              href="/signup"
+            <a
+              href="https://kamrulhsumit.vercel.app/"
               className="flex min-h-10 min-w-11 items-center justify-center hover:text-foreground"
             >
-              Sign up
-            </Link>
+              Developed by
+            </a>
           </nav>
         </div>
       </footer>
