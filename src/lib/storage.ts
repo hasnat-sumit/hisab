@@ -13,10 +13,12 @@ import { MissingConfigError } from "./db";
 const LOCAL_ROOT = path.join(process.cwd(), ".data", "uploads");
 
 function blobStoreEnabled(): boolean {
-  if (process.env.BLOB_READ_WRITE_TOKEN) return true;
+  // Vercel connects newer stores with BLOB_STORE_ID, and the Blob library then
+  // authenticates by itself. Older stores have a read-write token instead.
+  if (process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID) return true;
   if (process.env.NODE_ENV === "production") {
     throw new MissingConfigError(
-      "BLOB_READ_WRITE_TOKEN is not set, so documents cannot be stored.",
+      "No Blob store is connected, so documents cannot be stored.",
     );
   }
   return false;

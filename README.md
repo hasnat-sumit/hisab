@@ -75,7 +75,7 @@ The database must be a replica set, because sign-up uses a transaction. Every At
 ## Deploy to Vercel
 
 1. Push this project to GitHub and import it at <https://vercel.com/new>.
-2. In the project, go to **Storage > Create > Blob** and create a store with **private** access. Connect it to the project, which adds `BLOB_READ_WRITE_TOKEN` automatically.
+2. In the project, go to **Storage > Create > Blob** and create a store with **private** access. Connect it to the project, which adds `BLOB_STORE_ID` (or `BLOB_READ_WRITE_TOKEN` on older stores) automatically.
 3. Under **Settings > Environment Variables**, add:
    - `MONGODB_URI`: your Atlas connection string
    - `BETTER_AUTH_SECRET`: a new random secret, different from the local one
