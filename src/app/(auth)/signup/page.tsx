@@ -21,8 +21,8 @@ export default function SignUpPage() {
         footerLinkHref="/login"
         footerLinkLabel="Log in"
       >
-        <GoogleSignIn />
         <SignUpForm />
+        <GoogleSignIn label="Sign up with Google" />
       </AuthCard>
     </>
   );

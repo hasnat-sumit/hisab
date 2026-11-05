@@ -35,17 +35,28 @@ function errorMessage(code: string | null): string | null {
   if (!code) return null;
   // Better Auth writes this code with spaces or underscores.
   if (code.replaceAll("_", " ").includes("not linked")) {
-    return "An account with this email already exists. Log in with your password, then connect Google from your Profile.";
+    return "An account with this email already exists. Log in with your password, then connect Google from Settings.";
   }
   return "Google sign-in did not finish. Please try again.";
 }
 
 /** Works for both logging in and signing up: Google makes the account if new. */
-export function GoogleButton() {
+export function GoogleButton({
+  label,
+  enabled,
+}: {
+  label: string;
+  /** False until the Google keys have been set up. */
+  enabled: boolean;
+}) {
   const [pending, setPending] = useState(false);
   const message = errorMessage(useSearchParams().get("error"));
 
   async function signIn() {
+    if (!enabled) {
+      toast.info("Google sign-in is not available yet. Please use your email.");
+      return;
+    }
     setPending(true);
     const { error } = await authClient.signIn.social({
       provider: "google",
@@ -60,6 +71,11 @@ export function GoogleButton() {
 
   return (
     <div className="grid gap-3">
+      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+        <span className="h-px flex-1 bg-border" />
+        or
+        <span className="h-px flex-1 bg-border" />
+      </div>
       {message && (
         <p role="alert" className="text-sm text-destructive">
           {message}
@@ -71,13 +87,8 @@ export function GoogleButton() {
         ) : (
           <GoogleIcon />
         )}
-        Continue with Google
+        {label}
       </Button>
-      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-        <span className="h-px flex-1 bg-border" />
-        or
-        <span className="h-px flex-1 bg-border" />
-      </div>
     </div>
   );
 }

@@ -115,7 +115,7 @@ Nothing needs to be run by hand. The first time a user opens the app, their old 
 
 ## Set up Google sign-in
 
-The app works without this: the Google button only appears once both keys are set.
+The app works without this: until both keys are set, the Google button only shows a message asking people to use their email.
 
 1. Open the [Google Cloud Console](https://console.cloud.google.com/) and create a project.
 2. Go to **APIs & Services > OAuth consent screen** and fill in the app name and your email. Add yourself as a test user, or publish the app so anyone can sign in.
