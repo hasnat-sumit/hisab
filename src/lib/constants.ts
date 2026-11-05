@@ -122,14 +122,35 @@ export const MAX_DOCUMENT_BYTES = 4 * 1024 * 1024;
 export const DOCUMENT_ACCEPT = ".pdf,.jpg,.jpeg,.png";
 export const DOCUMENT_EXTENSIONS = ["pdf", "jpg", "jpeg", "png"];
 
+function defaultCategories(type: TransactionType): string[] {
+  return type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+}
+
+/** Whether the user made this category, rather than it being built in. */
+export function isCustomCategory(
+  type: TransactionType,
+  category: string,
+): boolean {
+  return (
+    category !== VEHICLE_CATEGORY &&
+    !defaultCategories(type).includes(category)
+  );
+}
+
 export function categoryOptions(
   type: TransactionType,
   usedCategories: string[] = [],
+  /** Built-in categories the user has deleted. */
+  hidden: string[] = [],
 ): string[] {
-  const defaults = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+  const defaults = defaultCategories(type);
   const custom = usedCategories.filter((c) => !defaults.includes(c)).sort();
   // Keep "Other" as the last choice, after any custom categories.
-  return [...defaults.filter((c) => c !== "Other"), ...custom, "Other"];
+  return [
+    ...defaults.filter((c) => c !== "Other" && !hidden.includes(c)),
+    ...custom,
+    ...(hidden.includes("Other") ? [] : ["Other"]),
+  ];
 }
 
 export function vehicleExpenseLabel(type: VehicleExpenseType): string {

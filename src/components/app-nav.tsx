@@ -12,7 +12,7 @@ const NAV_ITEMS = [
   { href: "/expenses", label: "Expenses", icon: WalletCards, module: "finance" },
   { href: "/bike", label: "Vehicles", icon: Bike, module: "vehicles" },
   { href: "/profile", label: "Profile", icon: UserRound },
-  { href: "/settings", label: "Settings", icon: Settings },
+  // { href: "/settings", label: "Settings", icon: Settings },
 ] as const;
 
 const BOTTOM_COLUMNS: Record<number, string> = {

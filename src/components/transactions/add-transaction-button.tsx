@@ -10,11 +10,11 @@ import { cn } from "@/lib/utils";
 
 export function AddTransactionButton({
   type,
-  usedCategories,
+  categories,
   floating = false,
 }: {
   type: TransactionType;
-  usedCategories: string[];
+  categories: string[];
   /** On phones, float above the bottom navigation so it is always in reach. */
   floating?: boolean;
 }) {
@@ -37,7 +37,7 @@ export function AddTransactionButton({
         open={open}
         onOpenChange={setOpen}
         type={type}
-        usedCategories={usedCategories}
+        categories={categories}
       />
     </>
   );

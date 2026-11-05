@@ -15,13 +15,13 @@ import type { BikeDTO, FuelEntryDTO, TransactionDTO } from "@/lib/types";
 /** Edits in the form that fits the record, whichever list it is shown in. */
 function EditDialog({
   transaction,
-  usedCategories,
+  categories,
   bikes,
   open,
   onOpenChange,
 }: {
   transaction: TransactionDTO;
-  usedCategories: string[];
+  categories: string[];
   bikes: BikeDTO[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -38,7 +38,7 @@ function EditDialog({
       pricePerLiter: fuel.pricePerLiter,
       fullTank: fuel.fullTank,
       note: transaction.note,
-      paymentMethod: transaction.paymentMethod,
+      // paymentMethod: transaction.paymentMethod,
     };
     return (
       <FuelDialog
@@ -64,7 +64,7 @@ function EditDialog({
           expenseType: vehicleExpenseType,
           amount: transaction.amount,
           note: transaction.note,
-          paymentMethod: transaction.paymentMethod,
+          // paymentMethod: transaction.paymentMethod,
         }}
       />
     );
@@ -75,18 +75,18 @@ function EditDialog({
       onOpenChange={onOpenChange}
       type={transaction.type}
       transaction={transaction}
-      usedCategories={usedCategories}
+      categories={categories}
     />
   );
 }
 
 export function TransactionActions({
   transaction,
-  usedCategories,
+  categories,
   bikes,
 }: {
   transaction: TransactionDTO;
-  usedCategories: string[];
+  categories: string[];
   bikes: BikeDTO[];
 }) {
   const [editing, setEditing] = useState(false);
@@ -107,7 +107,7 @@ export function TransactionActions({
       </Button>
       <EditDialog
         transaction={transaction}
-        usedCategories={usedCategories}
+        categories={categories}
         bikes={bikes}
         open={editing}
         onOpenChange={setEditing}

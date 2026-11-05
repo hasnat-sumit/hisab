@@ -1,4 +1,5 @@
 import { ApiError, isObjectId, notFound, parseBody, withUser } from "@/lib/api";
+import { restoreCategory } from "@/lib/data/settings";
 import { toDate } from "@/lib/dates";
 import { Transaction } from "@/lib/models/transaction";
 import { transactionSchema } from "@/lib/validators";
@@ -19,6 +20,10 @@ export const PATCH = withUser<Params>(async ({ request, user, params }) => {
     throw new ApiError(409, "Edit this expense from its vehicle.");
   }
 
+  // Editing a record still in a deleted "Other" must not bring "Other" back.
+  const categoryChanged =
+    transaction.type !== data.type || transaction.category !== data.category;
+
   transaction.type = data.type;
   transaction.date = toDate(data.date);
   transaction.category = data.category;
@@ -27,6 +32,9 @@ export const PATCH = withUser<Params>(async ({ request, user, params }) => {
   transaction.paymentMethod = data.type === "expense" ? data.paymentMethod : undefined;
   transaction.recurring = data.type === "expense" ? data.recurring : undefined;
   await transaction.save();
+  if (categoryChanged) {
+    await restoreCategory(user.id, data.type, data.category);
+  }
   return Response.json({ id: transaction.id });
 });
 

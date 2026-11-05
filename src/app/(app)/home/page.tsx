@@ -17,6 +17,7 @@ import { PageSkeleton } from "@/components/page-skeleton";
 import { SummaryCards } from "@/components/summary-cards";
 import { AddTransactionButton } from "@/components/transactions/add-transaction-button";
 import { Card } from "@/components/ui/card";
+import { categoryOptions } from "@/lib/constants";
 import { getBikes, getVehicleExpenses } from "@/lib/data/bikes";
 import { getSettings } from "@/lib/data/settings";
 import { getFinanceRows } from "@/lib/data/transactions";
@@ -52,7 +53,7 @@ async function HomeContent({
   const user = await requireUser();
   const month = resolveMonth((await searchParams).month);
 
-  const [{ modules }, rows, bikes, records] = await Promise.all([
+  const [{ modules, hiddenCategories }, rows, bikes, records] = await Promise.all([
     getSettings(user.id),
     getFinanceRows(user.id),
     getBikes(user.id),
@@ -91,7 +92,11 @@ async function HomeContent({
 
           <AddTransactionButton
             type="expense"
-            usedCategories={usedCategories(rows, "expense")}
+            categories={categoryOptions(
+              "expense",
+              usedCategories(rows, "expense"),
+              hiddenCategories.expense,
+            )}
             floating
           />
         </>

@@ -79,6 +79,8 @@ async function ExpensesContent({
   }
 
   const usedCategories = findUsedCategories(rows, type);
+  const hidden = settings.hiddenCategories[type];
+  const categories = categoryOptions(type, usedCategories, hidden);
   const noun = type === "income" ? "income" : "expenses";
 
   return (
@@ -126,11 +128,16 @@ async function ExpensesContent({
           key={`${type}-${category ?? "all"}`}
           baseHref={pageHref(type, month)}
           category={category}
-          categories={categoryOptions(type, usedCategories)}
+          // A deleted "Other" can still hold records, which stay findable here.
+          categories={categoryOptions(
+            type,
+            usedCategories,
+            hidden.filter((c) => !usedCategories.includes(c)),
+          )}
         />
         <AddTransactionButton
           type={type}
-          usedCategories={usedCategories}
+          categories={categories}
           floating
         />
       </div>
@@ -154,7 +161,7 @@ async function ExpensesContent({
               >
                 <TransactionActions
                   transaction={transaction}
-                  usedCategories={usedCategories}
+                  categories={categories}
                   bikes={bikes}
                 />
               </TransactionRow>

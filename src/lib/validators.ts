@@ -64,6 +64,11 @@ const paymentMethodField = z
   .optional()
   .transform((value) => value || undefined);
 
+export const categoryDeleteSchema = z.object({
+  type: z.enum(TRANSACTION_TYPES),
+  name: z.string().trim().min(1).max(40),
+});
+
 export const transactionSchema = z.object({
   type: z.enum(TRANSACTION_TYPES),
   date: dateField,

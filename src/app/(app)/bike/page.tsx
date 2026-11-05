@@ -505,7 +505,7 @@ function VehicleDashboard({
               >
                 <TransactionActions
                   transaction={toTransaction(record)}
-                  usedCategories={[]}
+                  categories={[]}
                   bikes={bikes}
                 />
               </TransactionRow>

@@ -31,12 +31,12 @@ type FormOutput = z.output<typeof transactionSchema>;
 function TransactionForm({
   type,
   transaction,
-  usedCategories,
+  categories,
   onDone,
 }: {
   type: TransactionType;
   transaction?: TransactionDTO;
-  usedCategories: string[];
+  categories: string[];
   onDone: () => void;
 }) {
   const router = useRouter();
@@ -109,7 +109,7 @@ function TransactionForm({
             <CategoryField
               id="tx-category"
               type={type}
-              usedCategories={usedCategories}
+              categories={categories}
               value={field.value}
               onChange={field.onChange}
               // After the dropdown has closed and given focus back.
@@ -151,7 +151,7 @@ function TransactionForm({
         </button>
       )}
 
-      {type === "expense" && (
+      {/* {type === "expense" && (
         <>
           <FormField
             id="tx-payment"
@@ -179,9 +179,9 @@ function TransactionForm({
             This is a recurring expense
           </label>
         </>
-      )}
+      )} */}
 
-      <MonthPreview
+      {/* <MonthPreview
         month={month}
         type={type}
         category={category}
@@ -191,7 +191,7 @@ function TransactionForm({
             ? { category: transaction.category, amount: transaction.amount }
             : undefined
         }
-      />
+      /> */}
 
       <SubmitButton pending={isSubmitting}>
         {transaction
@@ -209,13 +209,13 @@ export function TransactionDialog({
   onOpenChange,
   type,
   transaction,
-  usedCategories,
+  categories,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   type: TransactionType;
   transaction?: TransactionDTO;
-  usedCategories: string[];
+  categories: string[];
 }) {
   const noun = type === "income" ? "income" : "expense";
   return (
@@ -229,7 +229,7 @@ export function TransactionDialog({
         <TransactionForm
           type={type}
           transaction={transaction}
-          usedCategories={usedCategories}
+          categories={categories}
           onDone={() => onOpenChange(false)}
         />
       </DialogContent>

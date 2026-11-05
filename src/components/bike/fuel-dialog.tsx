@@ -239,7 +239,7 @@ function FuelForm({
           </span>
         </span>
       </label>
-      <FormField
+      {/* <FormField
         id="fuel-payment"
         label="Payment method"
         error={errors.paymentMethod?.message}
@@ -255,15 +255,15 @@ function FuelForm({
             />
           )}
         />
-      </FormField>
-      <FormField id="fuel-note" label="Note" error={errors.note?.message}>
+      </FormField> */}
+      {/* <FormField id="fuel-note" label="Note" error={errors.note?.message}>
         <Input
           id="fuel-note"
           maxLength={200}
           placeholder="Optional"
           {...register("note")}
         />
-      </FormField>
+      </FormField> */}
       <SubmitButton pending={isSubmitting}>
         {entry ? "Save changes" : "Add fuel entry"}
       </SubmitButton>

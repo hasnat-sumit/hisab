@@ -18,6 +18,7 @@ export type SessionUser = {
 };
 
 export type SettingsDTO = {
+  hiddenCategories: Record<TransactionType, string[]>;
   theme: ThemePreference;
   modules: ModuleSettings;
 };

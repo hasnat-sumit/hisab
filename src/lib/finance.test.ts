@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { categoryOptions } from "./constants";
+import { categoryOptions, isCustomCategory } from "./constants";
 import {
   currentMonth,
   formatMonth,
@@ -68,6 +68,25 @@ test("custom categories appear before Other", () => {
   const options = categoryOptions("income", ["Rent", "Salary"]);
   assert.deepEqual(options.slice(-2), ["Rent", "Other"]);
   assert.equal(options.filter((c) => c === "Salary").length, 1);
+});
+
+test("deleted built-in categories leave the list", () => {
+  const options = categoryOptions("expense", ["Gym"], ["Food", "Other"]);
+  assert.equal(options.includes("Food"), false);
+  assert.equal(options.includes("Other"), false);
+  assert.equal(options.at(-1), "Gym");
+  assert.equal(options.includes("Rent"), true);
+});
+
+test("custom categories are told apart from built-in ones", () => {
+  assert.equal(isCustomCategory("expense", "Gym"), true);
+  // A default for income is still the user's own when used on an expense.
+  assert.equal(isCustomCategory("expense", "Salary"), true);
+  assert.equal(isCustomCategory("expense", "Food"), false);
+  assert.equal(isCustomCategory("income", "Salary"), false);
+  assert.equal(isCustomCategory("expense", "Other"), false);
+  assert.equal(isCustomCategory("income", "Other"), false);
+  assert.equal(isCustomCategory("expense", "Vehicle"), false);
 });
 
 test("transaction validation", () => {

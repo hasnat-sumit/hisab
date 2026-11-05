@@ -1,8 +1,15 @@
 "use client";
 
+import type { ReactNode } from "react";
+
 import { cn } from "@/lib/utils";
 
-export type ChipOption = { value: string; label: string };
+export type ChipOption = {
+  value: string;
+  label: string;
+  /** Shown right after the chip, such as a delete button. */
+  trailing?: ReactNode;
+};
 
 /** Shows every option at once, so nothing is chosen for the user. */
 export function ChoiceChips({
@@ -33,21 +40,23 @@ export function ChoiceChips({
       {options.map((option) => {
         const selected = option.value === value;
         return (
-          <button
-            key={option.value}
-            type="button"
-            aria-pressed={selected}
-            onClick={() => onChange(option.value)}
-            className={cn(
-              // Long custom names wrap, so they can never widen the form.
-              "min-h-10 max-w-full rounded-full border px-3.5 py-1 text-sm font-medium wrap-anywhere transition-colors outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50 md:min-h-9",
-              selected
-                ? "border-primary bg-primary text-primary-foreground"
-                : "bg-card text-foreground hover:bg-muted",
-            )}
-          >
-            {option.label}
-          </button>
+          <div key={option.value} className="flex max-w-full items-center">
+            <button
+              type="button"
+              aria-pressed={selected}
+              onClick={() => onChange(option.value)}
+              className={cn(
+                // Long custom names wrap, so they can never widen the form.
+                "min-h-10 max-w-full rounded-full border px-3.5 py-1 text-sm font-medium wrap-anywhere transition-colors outline-none select-none focus-visible:ring-3 focus-visible:ring-ring/50 md:min-h-9",
+                selected
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "bg-card text-foreground hover:bg-muted",
+              )}
+            >
+              {option.label}
+            </button>
+            {option.trailing}
+          </div>
         );
       })}
     </div>
