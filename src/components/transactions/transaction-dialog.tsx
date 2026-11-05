@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import type { z } from "zod";
 
 import { FormField } from "@/components/form-field";
-import { PaymentMethodField } from "@/components/payment-method-field";
 import { SubmitButton } from "@/components/submit-button";
 import { CategoryField } from "@/components/transactions/category-field";
 import { MonthPreview } from "@/components/transactions/month-preview";
@@ -56,7 +55,6 @@ function TransactionForm({
       category: transaction?.category ?? "",
       amount: transaction ? String(transaction.amount) : "",
       note: transaction?.note ?? "",
-      paymentMethod: transaction?.paymentMethod ?? "",
       recurring: transaction?.recurring ?? false,
     },
   });
@@ -152,33 +150,14 @@ function TransactionForm({
       )}
 
       {/* {type === "expense" && (
-        <>
-          <FormField
-            id="tx-payment"
-            label="Payment method"
-            error={errors.paymentMethod?.message}
-          >
-            <Controller
-              control={control}
-              name="paymentMethod"
-              render={({ field }) => (
-                <PaymentMethodField
-                  id="tx-payment"
-                  value={field.value ?? ""}
-                  onChange={field.onChange}
-                />
-              )}
-            />
-          </FormField>
-          <label className="flex min-h-10 items-center gap-3 text-sm">
-            <input
-              type="checkbox"
-              className="size-5 accent-primary"
-              {...register("recurring")}
-            />
-            This is a recurring expense
-          </label>
-        </>
+        <label className="flex min-h-10 items-center gap-3 text-sm">
+          <input
+            type="checkbox"
+            className="size-5 accent-primary"
+            {...register("recurring")}
+          />
+          This is a recurring expense
+        </label>
       )} */}
 
       {/* <MonthPreview

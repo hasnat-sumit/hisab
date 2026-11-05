@@ -1,5 +1,4 @@
 import {
-  ArrowRight,
   Bike,
   FileText,
   PiggyBank,
@@ -9,35 +8,7 @@ import Link from "next/link";
 
 import { Logo } from "@/components/logo";
 import { buttonVariants } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-
-const FEATURES = [
-  {
-    icon: WalletCards,
-    title: "Income and expenses",
-    description:
-      "Add an expense in seconds, then filter by month or category to see where your money went.",
-  },
-  {
-    icon: PiggyBank,
-    title: "Savings that add up",
-    description:
-      "See what you save each month and in total, in Taka (৳), with charts of where it goes.",
-  },
-  {
-    icon: Bike,
-    title: "Bikes and cars",
-    description:
-      "Log fuel and servicing for every vehicle to follow your km/L and running costs.",
-  },
-  {
-    icon: FileText,
-    title: "Licences and documents",
-    description:
-      "Keep your licence, RC, insurance and tax token together. Only you can open them.",
-  },
-];
 
 export default function LandingPage() {
   return (
@@ -81,9 +52,6 @@ export default function LandingPage() {
             your vehicles&apos; fuel and mileage.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            {/* <Link href="/signup" className={buttonVariants({ size: "lg" })}>
-              Get started <ArrowRight aria-hidden />
-            </Link> */}
             <Link
               href="/login"
               className={cn(buttonVariants({ variant: "outline", size: "lg" }))}
@@ -92,36 +60,6 @@ export default function LandingPage() {
             </Link>
           </div>
         </section>
-
-        {/* <section
-          id="features"
-          aria-labelledby="features-heading"
-          className="scroll-mt-16 border-t bg-muted/40"
-        >
-          <div className="mx-auto w-full max-w-5xl px-4 py-14 md:px-8">
-            <h2
-              id="features-heading"
-              className="text-center text-2xl font-semibold tracking-tight"
-            >
-              Everything you need, nothing you don&apos;t
-            </h2>
-            <ul className="mt-8 grid gap-4 sm:grid-cols-2">
-              {FEATURES.map(({ icon: Icon, title, description }) => (
-                <li key={title}>
-                  <Card className="h-full gap-3 p-5">
-                    <span className="flex size-10 items-center justify-center rounded-xl bg-accent text-accent-foreground">
-                      <Icon className="size-5" aria-hidden />
-                    </span>
-                    <h3 className="font-semibold">{title}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {description}
-                    </p>
-                  </Card>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </section> */}
       </main>
 
       <footer className="border-t bg-card pb-[env(safe-area-inset-bottom)]">

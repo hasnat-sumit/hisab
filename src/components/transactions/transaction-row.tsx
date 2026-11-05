@@ -1,7 +1,7 @@
 import { ArrowDownLeft, ArrowUpRight, Repeat } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { paymentMethodLabel, vehicleExpenseLabel } from "@/lib/constants";
+import { vehicleExpenseLabel } from "@/lib/constants";
 import { formatDate } from "@/lib/dates";
 import { formatTaka } from "@/lib/format";
 import type { TransactionDTO } from "@/lib/types";
@@ -20,11 +20,9 @@ export function TransactionRow({
 }) {
   const isIncome = transaction.type === "income";
   const Icon = isIncome ? ArrowDownLeft : ArrowUpRight;
-  const details = [
-    formatDate(transaction.date),
-    transaction.paymentMethod && paymentMethodLabel(transaction.paymentMethod),
-    transaction.note,
-  ].filter(Boolean);
+  const details = [formatDate(transaction.date), transaction.note].filter(
+    Boolean,
+  );
   return (
     <li className="flex items-center gap-3 py-3">
       <span

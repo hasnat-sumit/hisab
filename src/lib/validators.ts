@@ -3,8 +3,7 @@ import { z } from "zod";
 import {
   DOCUMENT_TYPE_VALUES,
   MODULE_KEYS,
-  NON_FUEL_EXPENSE_TYPE_VALUES,
-  PAYMENT_METHOD_VALUES,
+  normalizeVehicleExpenseType,
   THEME_VALUES,
   TRANSACTION_TYPES,
   VEHICLE_CATEGORY,
@@ -57,15 +56,12 @@ const amountField = numberField("Enter an amount.")
   .refine((n) => n <= 1_000_000_000, "That amount is too large.")
   .transform((n) => Math.round(n * 100) / 100);
 
-const paymentMethodField = z
-  .union([z.literal(""), z.enum(PAYMENT_METHOD_VALUES)], {
-    error: "Choose a payment method.",
-  })
-  .optional()
-  .transform((value) => value || undefined);
-
 export const categoryDeleteSchema = z.object({
   type: z.enum(TRANSACTION_TYPES),
+  name: z.string().trim().min(1).max(40),
+});
+
+export const vehicleExpenseTypeDeleteSchema = z.object({
   name: z.string().trim().min(1).max(40),
 });
 
@@ -83,7 +79,6 @@ export const transactionSchema = z.object({
     ),
   amount: amountField,
   note: optionalText(200),
-  paymentMethod: paymentMethodField,
   recurring: z.boolean().optional(),
 });
 
@@ -108,12 +103,15 @@ export const bikeSchema = z.object({
 export const vehicleExpenseSchema = z.object({
   bikeId: objectIdField,
   date: dateField,
-  expenseType: z.enum(NON_FUEL_EXPENSE_TYPE_VALUES, {
-    error: "Choose an expense type.",
-  }),
+  expenseType: z
+    .string({ error: "Choose an expense type." })
+    .trim()
+    .min(1, "Choose an expense type.")
+    .max(40, "Keep the expense type under 40 characters.")
+    .transform(normalizeVehicleExpenseType)
+    .refine((value) => value !== "fuel", "Add fuel with the Add Fuel button."),
   amount: amountField,
   note: optionalText(200),
-  paymentMethod: paymentMethodField,
 });
 
 export const fuelEntrySchema = z
@@ -143,7 +141,6 @@ export const fuelEntrySchema = z
       .refine((n) => n === undefined || n <= 1000, "That quantity is too large."),
     fullTank: z.boolean().optional(),
     note: optionalText(200),
-    paymentMethod: paymentMethodField,
   })
   .transform((data, context) => {
     const amounts = resolveFuelAmounts(data);

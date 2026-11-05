@@ -24,7 +24,6 @@ export const PATCH = withUser<Params>(async ({ request, user, params }) => {
   entry.date = toDate(data.date);
   entry.amount = data.totalCost;
   entry.note = data.note;
-  entry.paymentMethod = data.paymentMethod;
   entry.fuel = {
     odometer: data.odometer,
     liters: data.fuelQuantity,

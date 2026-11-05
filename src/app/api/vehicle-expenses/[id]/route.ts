@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 
 import { isObjectId, notFound, parseBody, withUser } from "@/lib/api";
 import { assertOwnedVehicle } from "@/lib/data/fuel-validation";
+import { restoreVehicleExpenseType } from "@/lib/data/settings";
 import { toDate } from "@/lib/dates";
 import { Transaction } from "@/lib/models/transaction";
 import { vehicleExpenseSchema } from "@/lib/validators";
@@ -24,13 +25,16 @@ export const PATCH = withUser<Params>(async ({ request, user, params }) => {
   if (!expense) throw notFound("Expense");
   await assertOwnedVehicle(user.id, data.bikeId, { allowArchived: true });
 
+  // Editing a record still in a deleted "other" must not bring "other" back.
+  const typeChanged = expense.vehicleExpenseType !== data.expenseType;
+
   expense.bikeId = new Types.ObjectId(data.bikeId);
   expense.date = toDate(data.date);
   expense.amount = data.amount;
   expense.note = data.note;
-  expense.paymentMethod = data.paymentMethod;
   expense.vehicleExpenseType = data.expenseType;
   await expense.save();
+  if (typeChanged) await restoreVehicleExpenseType(user.id, data.expenseType);
   return Response.json({ id: expense.id });
 });
 

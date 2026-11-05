@@ -29,7 +29,6 @@ export const PATCH = withUser<Params>(async ({ request, user, params }) => {
   transaction.category = data.category;
   transaction.amount = data.amount;
   transaction.note = data.note;
-  transaction.paymentMethod = data.type === "expense" ? data.paymentMethod : undefined;
   transaction.recurring = data.type === "expense" ? data.recurring : undefined;
   await transaction.save();
   if (categoryChanged) {

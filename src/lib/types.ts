@@ -1,7 +1,6 @@
 import type {
   DocumentType,
   ModuleSettings,
-  PaymentMethod,
   ThemePreference,
   TransactionType,
   VehicleExpenseType,
@@ -19,6 +18,7 @@ export type SessionUser = {
 
 export type SettingsDTO = {
   hiddenCategories: Record<TransactionType, string[]>;
+  hiddenVehicleExpenseTypes: string[];
   theme: ThemePreference;
   modules: ModuleSettings;
 };
@@ -37,7 +37,6 @@ export type TransactionDTO = {
   category: string;
   amount: number;
   note?: string;
-  paymentMethod?: PaymentMethod;
   recurring?: boolean;
   bikeId?: string;
   vehicleExpenseType?: VehicleExpenseType;
@@ -63,14 +62,12 @@ export type VehicleExpenseDTO = {
   expenseType: VehicleExpenseType;
   amount: number;
   note?: string;
-  paymentMethod?: PaymentMethod;
   fuel?: FuelDetailsDTO;
 };
 
 export type FuelEntryDTO = FuelReading & {
   bikeId: string;
   note?: string;
-  paymentMethod?: PaymentMethod;
 };
 
 export type DocumentDTO = {

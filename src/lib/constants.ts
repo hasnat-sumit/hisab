@@ -23,25 +23,6 @@ export const INCOME_CATEGORIES = [
 export const TRANSACTION_TYPES = ["expense", "income"] as const;
 export type TransactionType = (typeof TRANSACTION_TYPES)[number];
 
-export const PAYMENT_METHODS = [
-  { value: "cash", label: "Cash" },
-  { value: "card", label: "Card" },
-  { value: "bkash", label: "bKash" },
-  { value: "nagad", label: "Nagad" },
-  { value: "bank", label: "Bank transfer" },
-  { value: "other", label: "Other" },
-] as const;
-
-export const PAYMENT_METHOD_VALUES = [
-  "cash",
-  "card",
-  "bkash",
-  "nagad",
-  "bank",
-  "other",
-] as const;
-export type PaymentMethod = (typeof PAYMENT_METHOD_VALUES)[number];
-
 export const VEHICLE_TYPES = [
   { value: "bike", label: "Bike" },
   { value: "car", label: "Car" },
@@ -61,28 +42,9 @@ export const VEHICLE_EXPENSE_TYPES = [
   { value: "other", label: "Other" },
 ] as const;
 
-export const VEHICLE_EXPENSE_TYPE_VALUES = [
-  "fuel",
-  "servicing",
-  "parts",
-  "repairs",
-  "safety",
-  "accessories",
-  "insurance",
-  "other",
-] as const;
-export type VehicleExpenseType = (typeof VEHICLE_EXPENSE_TYPE_VALUES)[number];
-
-/** Fuel has its own form, so the general vehicle expense form leaves it out. */
-export const NON_FUEL_EXPENSE_TYPE_VALUES = [
-  "servicing",
-  "parts",
-  "repairs",
-  "safety",
-  "accessories",
-  "insurance",
-  "other",
-] as const;
+/** A built-in type's value from the list above, or a name the user typed. */
+export type VehicleExpenseType = string;
+export type VehicleExpenseTypeOption = { value: string; label: string };
 
 /** The category every vehicle expense has in the main expense list. */
 export const VEHICLE_CATEGORY = "Vehicle";
@@ -154,9 +116,39 @@ export function categoryOptions(
 }
 
 export function vehicleExpenseLabel(type: VehicleExpenseType): string {
-  return VEHICLE_EXPENSE_TYPES.find((t) => t.value === type)?.label ?? "Other";
+  return VEHICLE_EXPENSE_TYPES.find((t) => t.value === type)?.label ?? type;
 }
 
-export function paymentMethodLabel(method: PaymentMethod): string {
-  return PAYMENT_METHODS.find((m) => m.value === method)?.label ?? "Other";
+/** Typing the name of a built-in type chooses that type, not a lookalike. */
+export function normalizeVehicleExpenseType(name: string): VehicleExpenseType {
+  const lower = name.toLowerCase();
+  const builtIn = VEHICLE_EXPENSE_TYPES.find(
+    (t) => t.value === lower || t.label.toLowerCase() === lower,
+  );
+  return builtIn?.value ?? name;
+}
+
+export function isBuiltInVehicleExpenseType(type: VehicleExpenseType): boolean {
+  return VEHICLE_EXPENSE_TYPES.some((t) => t.value === type);
+}
+
+/** The form's choices. Fuel has its own form, so it is left out. */
+export function vehicleExpenseTypeOptions(
+  usedTypes: string[] = [],
+  /** Built-in types the user has deleted. */
+  hidden: string[] = [],
+): VehicleExpenseTypeOption[] {
+  const builtIn = VEHICLE_EXPENSE_TYPES.filter(
+    (t) => t.value !== "fuel" && t.value !== "other" && !hidden.includes(t.value),
+  );
+  const custom = usedTypes
+    .filter((type) => !isBuiltInVehicleExpenseType(type))
+    .sort()
+    .map((type) => ({ value: type, label: type }));
+  // Keep "Other" as the last choice, after any custom types.
+  return [
+    ...builtIn,
+    ...custom,
+    ...(hidden.includes("other") ? [] : [{ value: "other", label: "Other" }]),
+  ];
 }

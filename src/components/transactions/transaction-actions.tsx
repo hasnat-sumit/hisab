@@ -8,7 +8,10 @@ import { VehicleExpenseDialog } from "@/components/bike/vehicle-expense-dialog";
 import { ConfirmDelete } from "@/components/confirm-delete";
 import { TransactionDialog } from "@/components/transactions/transaction-dialog";
 import { Button } from "@/components/ui/button";
-import { vehicleExpenseLabel } from "@/lib/constants";
+import {
+  vehicleExpenseLabel,
+  type VehicleExpenseTypeOption,
+} from "@/lib/constants";
 import { formatTaka } from "@/lib/format";
 import type { BikeDTO, FuelEntryDTO, TransactionDTO } from "@/lib/types";
 
@@ -16,12 +19,14 @@ import type { BikeDTO, FuelEntryDTO, TransactionDTO } from "@/lib/types";
 function EditDialog({
   transaction,
   categories,
+  expenseTypes,
   bikes,
   open,
   onOpenChange,
 }: {
   transaction: TransactionDTO;
   categories: string[];
+  expenseTypes: VehicleExpenseTypeOption[];
   bikes: BikeDTO[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -38,7 +43,6 @@ function EditDialog({
       pricePerLiter: fuel.pricePerLiter,
       fullTank: fuel.fullTank,
       note: transaction.note,
-      // paymentMethod: transaction.paymentMethod,
     };
     return (
       <FuelDialog
@@ -57,6 +61,7 @@ function EditDialog({
         onOpenChange={onOpenChange}
         bikes={bikes}
         bikeId={bikeId}
+        expenseTypes={expenseTypes}
         expense={{
           id: transaction.id,
           bikeId,
@@ -64,7 +69,6 @@ function EditDialog({
           expenseType: vehicleExpenseType,
           amount: transaction.amount,
           note: transaction.note,
-          // paymentMethod: transaction.paymentMethod,
         }}
       />
     );
@@ -83,10 +87,12 @@ function EditDialog({
 export function TransactionActions({
   transaction,
   categories,
+  expenseTypes,
   bikes,
 }: {
   transaction: TransactionDTO;
   categories: string[];
+  expenseTypes: VehicleExpenseTypeOption[];
   bikes: BikeDTO[];
 }) {
   const [editing, setEditing] = useState(false);
@@ -108,6 +114,7 @@ export function TransactionActions({
       <EditDialog
         transaction={transaction}
         categories={categories}
+        expenseTypes={expenseTypes}
         bikes={bikes}
         open={editing}
         onOpenChange={setEditing}

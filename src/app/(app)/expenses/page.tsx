@@ -16,7 +16,7 @@ import { TransactionActions } from "@/components/transactions/transaction-action
 import { TransactionRow } from "@/components/transactions/transaction-row";
 import { Card } from "@/components/ui/card";
 import { categoryOptions, type TransactionType } from "@/lib/constants";
-import { getBikes } from "@/lib/data/bikes";
+import { getBikes, getVehicleExpenseTypes } from "@/lib/data/bikes";
 import { getSettings } from "@/lib/data/settings";
 import { getFinanceRows, listTransactions } from "@/lib/data/transactions";
 import { formatMonth, resolveMonth } from "@/lib/dates";
@@ -63,11 +63,12 @@ async function ExpensesContent({
       ? params.category
       : undefined;
 
-  const [settings, rows, transactions, bikes] = await Promise.all([
+  const [settings, rows, transactions, bikes, expenseTypes] = await Promise.all([
     getSettings(user.id),
     getFinanceRows(user.id),
     listTransactions(user.id, { type, month, category }),
     getBikes(user.id),
+    getVehicleExpenseTypes(user.id),
   ]);
   if (!settings.modules.finance) {
     return (
@@ -162,6 +163,7 @@ async function ExpensesContent({
                 <TransactionActions
                   transaction={transaction}
                   categories={categories}
+                  expenseTypes={expenseTypes}
                   bikes={bikes}
                 />
               </TransactionRow>

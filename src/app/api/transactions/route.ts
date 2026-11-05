@@ -8,10 +8,8 @@ export const POST = withUser(async ({ request, user }) => {
   const data = await parseBody(request, transactionSchema);
   const transaction = await Transaction.create({
     ...data,
-    // A payment method and repeat flag only make sense on money going out.
-    ...(data.type === "income"
-      ? { paymentMethod: undefined, recurring: undefined }
-      : {}),
+    // A repeat flag only makes sense on money going out.
+    ...(data.type === "income" ? { recurring: undefined } : {}),
     date: toDate(data.date),
     userId: user.id,
   });

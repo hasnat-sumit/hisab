@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import { vehicleExpenseLabel, vehicleExpenseTypeOptions } from "./constants";
 import {
   categoryBreakdown,
   monthlySeries,
@@ -169,6 +170,37 @@ test("vehicle expenses need a vehicle and a type other than fuel", () => {
   assert.equal(parse({ expenseType: "parts" }), true);
   assert.equal(parse({ expenseType: "fuel" }), false);
   assert.equal(parse({ bikeId: "", expenseType: "parts" }), false);
+  assert.equal(parse({ expenseType: " FUEL " }), false);
+  assert.equal(parse({ expenseType: "" }), false);
+  assert.equal(parse({ expenseType: "x".repeat(41) }), false);
+  assert.equal(parse({ expenseType: "Car wash" }), true);
+});
+
+test("a typed vehicle expense type matches a built-in one by name", () => {
+  const typed = (expenseType: string) =>
+    vehicleExpenseSchema.parse({
+      bikeId: "a".repeat(24),
+      date: "2026-11-03",
+      amount: "10",
+      expenseType,
+    }).expenseType;
+  assert.equal(typed("safety equipment"), "safety");
+  assert.equal(typed("PARTS"), "parts");
+  assert.equal(typed(" Car wash "), "Car wash");
+});
+
+test("vehicle expense type choices", () => {
+  const values = (used: string[], hidden: string[] = []) =>
+    vehicleExpenseTypeOptions(used, hidden).map((t) => t.value);
+  // Fuel stays out, and custom types come just before Other.
+  assert.equal(values(["fuel"]).includes("fuel"), false);
+  assert.deepEqual(values(["Wash"]).slice(-2), ["Wash", "other"]);
+  // Deleted built-in types leave the list.
+  const trimmed = values(["Wash"], ["parts", "other"]);
+  assert.equal(trimmed.includes("parts"), false);
+  assert.equal(trimmed.at(-1), "Wash");
+  assert.equal(vehicleExpenseLabel("safety"), "Safety equipment");
+  assert.equal(vehicleExpenseLabel("Wash"), "Wash");
 });
 
 test("short chart amounts use lakh and crore", () => {

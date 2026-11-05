@@ -12,7 +12,12 @@ export const getSettings = cache(
   async (userId: string): Promise<SettingsDTO> => {
     await connectDB();
     const doc = await UserSettings.findOne({ userId })
-      .select({ theme: 1, modules: 1, hiddenCategories: 1 })
+      .select({
+        theme: 1,
+        modules: 1,
+        hiddenCategories: 1,
+        hiddenVehicleExpenseTypes: 1,
+      })
       .lean();
     return {
       theme: doc?.theme ?? "system",
@@ -21,6 +26,7 @@ export const getSettings = cache(
         expense: doc?.hiddenCategories?.expense ?? [],
         income: doc?.hiddenCategories?.income ?? [],
       },
+      hiddenVehicleExpenseTypes: doc?.hiddenVehicleExpenseTypes ?? [],
     };
   },
 );
@@ -34,5 +40,16 @@ export async function restoreCategory(
   await UserSettings.updateOne(
     { userId },
     { $pull: { [`hiddenCategories.${type}`]: category } },
+  );
+}
+
+/** Saving to a deleted built-in vehicle expense type adds it back too. */
+export async function restoreVehicleExpenseType(
+  userId: string,
+  expenseType: string,
+): Promise<void> {
+  await UserSettings.updateOne(
+    { userId },
+    { $pull: { hiddenVehicleExpenseTypes: expenseType } },
   );
 }

@@ -1,10 +1,7 @@
 import { Schema, type Types } from "mongoose";
 
 import {
-  PAYMENT_METHOD_VALUES,
   TRANSACTION_TYPES,
-  VEHICLE_EXPENSE_TYPE_VALUES,
-  type PaymentMethod,
   type TransactionType,
   type VehicleExpenseType,
 } from "../constants";
@@ -28,7 +25,6 @@ export type TransactionDoc = {
   category: string;
   amount: number;
   note?: string;
-  paymentMethod?: PaymentMethod;
   recurring?: boolean;
   bikeId?: Types.ObjectId;
   vehicleExpenseType?: VehicleExpenseType;
@@ -48,10 +44,9 @@ const transactionSchema = new Schema<TransactionDoc>(
     // Zero is only reachable through a fuel entry with a recorded cost of 0.
     amount: { type: Number, required: true, min: 0 },
     note: { type: String, trim: true, maxlength: 200 },
-    paymentMethod: { type: String, enum: PAYMENT_METHOD_VALUES },
     recurring: { type: Boolean },
     bikeId: { type: Schema.Types.ObjectId, ref: "Bike" },
-    vehicleExpenseType: { type: String, enum: VEHICLE_EXPENSE_TYPE_VALUES },
+    vehicleExpenseType: { type: String, trim: true, maxlength: 40 },
     fuel: {
       type: new Schema<FuelDetails>(
         {

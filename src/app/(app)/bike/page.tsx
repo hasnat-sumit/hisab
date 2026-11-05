@@ -20,10 +20,15 @@ import { TransactionRow } from "@/components/transactions/transaction-row";
 import { Card } from "@/components/ui/card";
 import {
   VEHICLE_CATEGORY,
-  VEHICLE_EXPENSE_TYPES,
   VEHICLE_TYPES,
+  vehicleExpenseTypeOptions,
+  type VehicleExpenseTypeOption,
 } from "@/lib/constants";
-import { getBikes, getVehicleExpenses } from "@/lib/data/bikes";
+import {
+  getBikes,
+  getVehicleExpenses,
+  getVehicleExpenseTypes,
+} from "@/lib/data/bikes";
 import { getSettings } from "@/lib/data/settings";
 import { formatMonth, resolveMonth } from "@/lib/dates";
 import { formatNumber, formatTaka } from "@/lib/format";
@@ -64,9 +69,11 @@ function Stat({
 }
 
 function ExpenseTypeTable({ totals }: { totals: VehicleTotals }) {
-  const rows = VEHICLE_EXPENSE_TYPES.filter(
-    (type) => (totals.byType[type.value] ?? 0) > 0,
-  );
+  // Every type with spending shows here, even one deleted from the form's list.
+  const rows = [
+    { value: "fuel", label: "Fuel" },
+    ...vehicleExpenseTypeOptions(Object.keys(totals.byType)),
+  ].filter((type) => (totals.byType[type.value] ?? 0) > 0);
   if (rows.length === 0) {
     return <p className="text-sm text-muted-foreground">No expenses in this period.</p>;
   }
@@ -92,7 +99,6 @@ function toTransaction(record: VehicleExpenseDTO): TransactionDTO {
     category: VEHICLE_CATEGORY,
     amount: record.amount,
     note: record.note,
-    paymentMethod: record.paymentMethod,
     bikeId: record.bikeId,
     vehicleExpenseType: record.expenseType,
     fuel: record.fuel,
@@ -111,10 +117,11 @@ async function BikeContent({
   const period = view === "year" ? month.slice(0, 4) : month;
   const periodLabel = view === "year" ? period : formatMonth(month);
 
-  const [settings, bikes, records] = await Promise.all([
+  const [settings, bikes, records, expenseTypes] = await Promise.all([
     getSettings(user.id),
     getBikes(user.id),
     getVehicleExpenses(user.id),
+    getVehicleExpenseTypes(user.id),
   ]);
 
   if (!settings.modules.vehicles) {
@@ -216,6 +223,7 @@ async function BikeContent({
           bike={selected}
           bikes={bikes}
           records={records}
+          expenseTypes={expenseTypes}
           period={period}
           periodLabel={periodLabel}
           overviewHref={hrefFor({ bike: undefined })}
@@ -309,6 +317,7 @@ function VehicleDashboard({
   bike,
   bikes,
   records,
+  expenseTypes,
   period,
   periodLabel,
   overviewHref,
@@ -316,6 +325,7 @@ function VehicleDashboard({
   bike: BikeDTO;
   bikes: BikeDTO[];
   records: VehicleExpenseDTO[];
+  expenseTypes: VehicleExpenseTypeOption[];
   period: string;
   periodLabel: string;
   overviewHref: string;
@@ -373,7 +383,11 @@ function VehicleDashboard({
         {!bike.archived && (
           <div className="grid grid-cols-2 gap-3 sm:flex">
             <AddFuelButton bikes={bikes} bikeId={bike.id} />
-            <AddVehicleExpenseButton bikes={bikes} bikeId={bike.id} />
+            <AddVehicleExpenseButton
+              bikes={bikes}
+              bikeId={bike.id}
+              expenseTypes={expenseTypes}
+            />
           </div>
         )}
 
@@ -506,6 +520,7 @@ function VehicleDashboard({
                 <TransactionActions
                   transaction={toTransaction(record)}
                   categories={[]}
+                  expenseTypes={expenseTypes}
                   bikes={bikes}
                 />
               </TransactionRow>

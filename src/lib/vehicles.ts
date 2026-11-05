@@ -43,7 +43,6 @@ export function fuelEntriesFor(
       pricePerLiter: record.fuel.pricePerLiter,
       fullTank: record.fuel.fullTank,
       note: record.note,
-      paymentMethod: record.paymentMethod,
     });
   }
   return entries;

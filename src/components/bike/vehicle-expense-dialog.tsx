@@ -7,8 +7,8 @@ import { toast } from "sonner";
 import type { z } from "zod";
 
 import { ChoiceChips } from "@/components/choice-chips";
+import { EditableChoiceChips } from "@/components/editable-choice-chips";
 import { FormField } from "@/components/form-field";
-import { PaymentMethodField } from "@/components/payment-method-field";
 import { SubmitButton } from "@/components/submit-button";
 import {
   Dialog,
@@ -18,7 +18,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { apiFetch, showFormError } from "@/lib/api-client";
-import { VEHICLE_EXPENSE_TYPES } from "@/lib/constants";
+import {
+  vehicleExpenseLabel,
+  type VehicleExpenseTypeOption,
+} from "@/lib/constants";
 import { today } from "@/lib/dates";
 import type { BikeDTO, VehicleExpenseDTO } from "@/lib/types";
 import { vehicleExpenseSchema } from "@/lib/validators";
@@ -26,17 +29,17 @@ import { vehicleExpenseSchema } from "@/lib/validators";
 type FormInput = z.input<typeof vehicleExpenseSchema>;
 type FormOutput = z.output<typeof vehicleExpenseSchema>;
 
-const TYPE_OPTIONS = VEHICLE_EXPENSE_TYPES.filter((t) => t.value !== "fuel");
-
 function VehicleExpenseForm({
   bikes,
   bikeId,
   expense,
+  expenseTypes,
   onDone,
 }: {
   bikes: BikeDTO[];
   bikeId: string;
   expense?: VehicleExpenseDTO;
+  expenseTypes: VehicleExpenseTypeOption[];
   onDone: () => void;
 }) {
   const router = useRouter();
@@ -51,10 +54,9 @@ function VehicleExpenseForm({
     defaultValues: {
       bikeId: expense?.bikeId ?? bikeId,
       date: expense?.date ?? today(),
-      expenseType: (expense?.expenseType ?? "") as FormInput["expenseType"],
+      expenseType: expense?.expenseType ?? "",
       amount: expense ? String(expense.amount) : "",
       note: expense?.note ?? "",
-      paymentMethod: expense?.paymentMethod ?? "",
     },
   });
 
@@ -109,13 +111,35 @@ function VehicleExpenseForm({
           control={control}
           name="expenseType"
           render={({ field }) => (
-            <ChoiceChips
+            <EditableChoiceChips
               id="ve-type"
               label="Expense type"
+              noun="expense type"
+              nounPlural="expense types"
               value={field.value}
               onChange={field.onChange}
               invalid={Boolean(errors.expenseType)}
-              options={TYPE_OPTIONS}
+              // A record being edited keeps showing its type, even a deleted one.
+              options={
+                !field.value ||
+                expenseTypes.some((type) => type.value === field.value)
+                  ? expenseTypes
+                  : [
+                      ...expenseTypes,
+                      {
+                        value: field.value,
+                        label: vehicleExpenseLabel(field.value),
+                      },
+                    ]
+              }
+              deleteUrl={(type) =>
+                `/api/vehicle-expense-types?name=${encodeURIComponent(type)}`
+              }
+              deleteDescription={(type) =>
+                type === "other"
+                  ? "It leaves the list. Any expenses already in Other stay there, so your totals stay the same."
+                  : "Any expenses of this type move to Other, so your totals stay the same."
+              }
             />
           )}
         />
@@ -140,23 +164,6 @@ function VehicleExpenseForm({
           />
         </FormField>
       </div>
-      <FormField
-        id="ve-payment"
-        label="Payment method"
-        error={errors.paymentMethod?.message}
-      >
-        <Controller
-          control={control}
-          name="paymentMethod"
-          render={({ field }) => (
-            <PaymentMethodField
-              id="ve-payment"
-              value={field.value ?? ""}
-              onChange={field.onChange}
-            />
-          )}
-        />
-      </FormField>
       <FormField id="ve-note" label="Note" error={errors.note?.message}>
         <Input
           id="ve-note"
@@ -181,6 +188,7 @@ export function VehicleExpenseDialog({
   bikes,
   bikeId = "",
   expense,
+  expenseTypes,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -188,6 +196,7 @@ export function VehicleExpenseDialog({
   /** The vehicle this was opened from. Left empty, the user picks one. */
   bikeId?: string;
   expense?: VehicleExpenseDTO;
+  expenseTypes: VehicleExpenseTypeOption[];
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -201,6 +210,7 @@ export function VehicleExpenseDialog({
           bikes={bikes}
           bikeId={bikeId}
           expense={expense}
+          expenseTypes={expenseTypes}
           onDone={() => onOpenChange(false)}
         />
       </DialogContent>

@@ -18,7 +18,6 @@ export const POST = withUser(async ({ request, user }) => {
         category: VEHICLE_CATEGORY,
         amount: data.totalCost,
         note: data.note,
-        paymentMethod: data.paymentMethod,
         bikeId: data.bikeId,
         vehicleExpenseType: "fuel",
         fuel: {

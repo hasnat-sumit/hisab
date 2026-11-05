@@ -8,7 +8,6 @@ import type { z } from "zod";
 
 import { ChoiceChips } from "@/components/choice-chips";
 import { FormField } from "@/components/form-field";
-import { PaymentMethodField } from "@/components/payment-method-field";
 import { SubmitButton } from "@/components/submit-button";
 import {
   Dialog,
@@ -103,7 +102,6 @@ function FuelForm({
       fuelQuantity: entry ? String(entry.fuelQuantity) : "",
       fullTank: entry?.fullTank ?? false,
       note: entry?.note ?? "",
-      paymentMethod: entry?.paymentMethod ?? "",
     },
   });
   const [totalCost, pricePerLiter, fuelQuantity] = useWatch({
@@ -239,23 +237,6 @@ function FuelForm({
           </span>
         </span>
       </label>
-      {/* <FormField
-        id="fuel-payment"
-        label="Payment method"
-        error={errors.paymentMethod?.message}
-      >
-        <Controller
-          control={control}
-          name="paymentMethod"
-          render={({ field }) => (
-            <PaymentMethodField
-              id="fuel-payment"
-              value={field.value ?? ""}
-              onChange={field.onChange}
-            />
-          )}
-        />
-      </FormField> */}
       {/* <FormField id="fuel-note" label="Note" error={errors.note?.message}>
         <Input
           id="fuel-note"

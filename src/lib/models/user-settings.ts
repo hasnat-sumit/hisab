@@ -13,6 +13,8 @@ export type UserSettingsDoc = {
   modules?: Partial<ModuleSettings>;
   /** Built-in categories the user has deleted, which the lists leave out. */
   hiddenCategories?: { expense?: string[]; income?: string[] };
+  /** Built-in vehicle expense types the user has deleted. */
+  hiddenVehicleExpenseTypes?: string[];
   /** Set only after every old fuel entry is confirmed to have been copied. */
   fuelCopiedAt?: Date;
 };
@@ -30,6 +32,7 @@ const userSettingsSchema = new Schema<UserSettingsDoc>(
       expense: { type: [String], default: undefined },
       income: { type: [String], default: undefined },
     },
+    hiddenVehicleExpenseTypes: { type: [String], default: undefined },
     fuelCopiedAt: { type: Date },
   },
   { timestamps: true },

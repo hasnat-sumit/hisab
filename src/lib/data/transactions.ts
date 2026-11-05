@@ -19,7 +19,6 @@ function toDTO(doc: LeanTransaction): TransactionDTO {
     category: doc.category,
     amount: doc.amount,
     note: doc.note,
-    paymentMethod: doc.paymentMethod,
     recurring: doc.recurring,
     bikeId: doc.bikeId?.toString(),
     vehicleExpenseType: doc.vehicleExpenseType,
