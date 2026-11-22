@@ -29,6 +29,8 @@ export type TransactionDoc = {
   bikeId?: Types.ObjectId;
   vehicleExpenseType?: VehicleExpenseType;
   fuel?: FuelDetails;
+  /** Set on the expense that records a written-off loan. */
+  loanId?: Types.ObjectId;
   /** Set on records copied from the old fuel entries, so a copy is made once. */
   legacyFuelEntryId?: Types.ObjectId;
   createdAt: Date;
@@ -58,6 +60,7 @@ const transactionSchema = new Schema<TransactionDoc>(
         { _id: false },
       ),
     },
+    loanId: { type: Schema.Types.ObjectId, ref: "Loan" },
     legacyFuelEntryId: { type: Schema.Types.ObjectId },
   },
   { timestamps: true },

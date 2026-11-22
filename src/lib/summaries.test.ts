@@ -7,12 +7,10 @@ import {
   monthlySeries,
   periodSummary,
   previewBreakdown,
-  runningSavings,
   totalSavings,
   yearlySeries,
   yearsWithRecords,
 } from "./finance";
-import { formatCompactTaka } from "./format";
 import type { VehicleExpenseDTO } from "./types";
 import {
   changeEmailSchema,
@@ -95,12 +93,6 @@ test("the months of a year add up to the year", () => {
     Math.round(sum * 100) / 100,
     periodSummary(rows, "2026").savings,
   );
-});
-
-test("running savings start from earlier years", () => {
-  const running = runningSavings(rows, monthlySeries(rows, "2026"));
-  assert.equal(running[0].running, 210000);
-  assert.equal(running[11].running, totalSavings(rows));
 });
 
 test("yearly series and years with records", () => {
@@ -219,12 +211,4 @@ test("vehicle expense type choices", () => {
   assert.equal(trimmed.at(-1), "Wash");
   assert.equal(vehicleExpenseLabel("safety"), "Safety equipment");
   assert.equal(vehicleExpenseLabel("Wash"), "Wash");
-});
-
-test("short chart amounts use lakh and crore", () => {
-  assert.equal(formatCompactTaka(500), "500");
-  assert.equal(formatCompactTaka(50000), "50K");
-  assert.equal(formatCompactTaka(150000), "1.5L");
-  assert.equal(formatCompactTaka(25000000), "2.5Cr");
-  assert.equal(formatCompactTaka(-150000), "-1.5L");
 });

@@ -119,22 +119,6 @@ export function yearlySeries(rows: FinanceRow[]): PeriodSummary[] {
   }));
 }
 
-/** Savings accumulated up to the end of each period in `series`. */
-export function runningSavings(
-  rows: FinanceRow[],
-  series: PeriodSummary[],
-): (PeriodSummary & { running: number })[] {
-  const first = series[0]?.key ?? "";
-  // Keys of a series are all the same length, and sort by date.
-  let running = summarize(
-    rows.filter((row) => row.month.slice(0, first.length) < first),
-  ).savings;
-  return series.map((point) => {
-    running = roundMoney(running + point.savings);
-    return { ...point, running };
-  });
-}
-
 export function usedCategories(
   rows: FinanceRow[],
   type: TransactionType,

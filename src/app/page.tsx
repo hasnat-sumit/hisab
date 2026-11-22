@@ -1,9 +1,3 @@
-import {
-  Bike,
-  FileText,
-  PiggyBank,
-  WalletCards,
-} from "lucide-react";
 import Link from "next/link";
 
 import { Logo } from "@/components/logo";

@@ -1,6 +1,6 @@
 # হিসাব-Hisab
 
-A simple, mobile-first app for tracking personal income, expenses and savings in Bangladeshi Taka (৳), plus bikes and cars with their fuel, mileage and running costs, and private storage for vehicle documents.
+A simple, mobile-first app for tracking personal income, expenses and savings in Bangladeshi Taka (৳), plus money you lend and borrow, bikes and cars with their fuel, mileage and running costs, and private storage for vehicle documents.
 
 Built with Next.js 16 (App Router), TypeScript, Tailwind CSS v4, shadcn/ui (Base UI), MongoDB with Mongoose, and Better Auth.
 
@@ -94,7 +94,7 @@ Keep the app close to the database, because every page view talks to it. `vercel
 
 ### How the numbers are calculated
 
-- **Saving of Month** = that month's income − expenses. **Total Savings** = all income − all expenses, across every month. Neither is ever stored, so they cannot fall out of step with your records.
+- **Saving of Month** = that month's income − expenses. **Total Savings** is the money in hand: all income − all expenses − money lent and not yet returned + money borrowed and not yet repaid. None of these is ever stored, so they cannot fall out of step with your records.
 - **One record per payment.** Fuel and other vehicle expenses are saved as transactions linked to a vehicle, so they appear in Expenses automatically and are never counted twice.
 - **Fuel amounts.** Any two of amount, price per liter and liters give the third. When all three are present, the amount and liters win, because they are what the pump showed, and the price is worked out from them.
 - **Reliable mileage** is measured between two fill-ups marked as a full tank: the distance between them ÷ all the fuel added since the first one.
@@ -102,6 +102,15 @@ Keep the app close to the database, because every page view talks to it. `vercel
 - **Average mileage** uses only reliable measurements when there are any, and estimates otherwise. It is labelled either way.
 - **Cost per km** = cost of every fuel entry except the first ÷ total distance.
 - **"Today" and the current month** use Bangladesh time, wherever the server runs.
+
+### Loans
+
+The **Loans** page tracks money you lend and money you borrow, with partial repayments.
+
+- **Lending is not an expense, and borrowing is not income.** Money lent leaves Total Savings until it comes back, and borrowed money counts in it until you repay it. Monthly income and expenses never change.
+- **Repayments** can be any amount up to what is left, on or after the loan date.
+- **Write off** a loan you will not get back: the unpaid part becomes an expense that day, in the "Written-off loan" category, so every expense total includes it. Undo the write-off from the loan to remove that expense. It can only be changed from the Loans page.
+- The **"Loan received"** income category still exists for older records. Move those to the Loans page by hand, then delete them from Expenses, so the money is not counted twice.
 
 ### Vehicles and your history
 

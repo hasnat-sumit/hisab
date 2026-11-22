@@ -1,5 +1,6 @@
 import type {
   DocumentType,
+  LoanDirection,
   ModuleSettings,
   ThemePreference,
   TransactionType,
@@ -41,6 +42,27 @@ export type TransactionDTO = {
   bikeId?: string;
   vehicleExpenseType?: VehicleExpenseType;
   fuel?: FuelDetailsDTO;
+  /** Set on the expense that records a written-off loan. */
+  loanId?: string;
+};
+
+export type RepaymentDTO = {
+  id: string;
+  amount: number;
+  date: string;
+  note?: string;
+};
+
+export type LoanDTO = {
+  id: string;
+  direction: LoanDirection;
+  person: string;
+  amount: number;
+  date: string;
+  note?: string;
+  /** Oldest first. */
+  repayments: RepaymentDTO[];
+  writeOff?: { date: string; amount: number };
 };
 
 export type BikeDTO = {

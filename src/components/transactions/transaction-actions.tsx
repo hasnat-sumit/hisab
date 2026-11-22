@@ -1,6 +1,7 @@
 "use client";
 
 import { Pencil } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 import { FuelDialog } from "@/components/bike/fuel-dialog";
@@ -100,6 +101,17 @@ export function TransactionActions({
   const name = transaction.vehicleExpenseType
     ? vehicleExpenseLabel(transaction.vehicleExpenseType)
     : transaction.category;
+  // Its amount must match the loan, so it only changes from the Loans page.
+  if (transaction.loanId) {
+    return (
+      <Link
+        href="/loans?view=lent"
+        className="flex min-h-10 shrink-0 items-center text-xs font-medium text-primary md:min-h-8"
+      >
+        View loan
+      </Link>
+    );
+  }
   return (
     <div className="flex shrink-0 max-md:-mr-2">
       <Button

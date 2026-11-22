@@ -1,17 +1,18 @@
 import type { MetadataRoute } from "next";
 
-// Lets people add Hisab to their phone's home screen, where it opens full
+// Lets people add হিসাব-Hisab to their phone's home screen, where it opens full
 // screen. There is no service worker, so the app still needs a connection.
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "হিসাব-Hisab",
-    short_name: "Hisab",
+    short_name: "হিসাব-Hisab",
     description:
       "Track your income, savings, vehicles and fuel in one simple place.",
     start_url: "/home",
     display: "standalone",
     orientation: "any",
-    background_color: "#fafbfa",
+    // The launch screen shows the icon on this colour, matching its black.
+    background_color: "#000000",
     theme_color: "#fafbfa",
     icons: [
       { src: "/icon-192.png", sizes: "192x192", type: "image/png" },

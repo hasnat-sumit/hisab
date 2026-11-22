@@ -1,7 +1,7 @@
 "use client";
 
 import { EditableChoiceChips } from "@/components/editable-choice-chips";
-import { VEHICLE_CATEGORY, type TransactionType } from "@/lib/constants";
+import { isLinkedCategory, type TransactionType } from "@/lib/constants";
 
 /** Every category as a tappable choice, plus one to type a new one. */
 export function CategoryField({
@@ -24,13 +24,13 @@ export function CategoryField({
 }) {
   const noun = type === "income" ? "income" : "expenses";
 
-  // Vehicle expenses are added from the Vehicles page, linked to a vehicle.
+  // Vehicle expenses and written-off loans are added from their own pages.
   // A record being edited keeps showing its category, even a deleted one.
   const options = [
     ...categories,
     ...(value && !categories.includes(value) ? [value] : []),
   ]
-    .filter((category) => category !== VEHICLE_CATEGORY)
+    .filter((category) => !isLinkedCategory(category))
     .map((category) => ({ value: category, label: category }));
 
   return (

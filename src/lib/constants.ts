@@ -49,10 +49,25 @@ export type VehicleExpenseTypeOption = { value: string; label: string };
 /** The category every vehicle expense has in the main expense list. */
 export const VEHICLE_CATEGORY = "Vehicle";
 
+/** The expense category of the unpaid part of a loan that was written off. */
+export const LOAN_WRITE_OFF_CATEGORY = "Written-off loan";
+
+/** Categories the app sets itself, from the Vehicles and Loans pages. */
+export function isLinkedCategory(category: string): boolean {
+  const lower = category.toLowerCase();
+  return (
+    lower === VEHICLE_CATEGORY.toLowerCase() ||
+    lower === LOAN_WRITE_OFF_CATEGORY.toLowerCase()
+  );
+}
+
+export const LOAN_DIRECTIONS = ["lent", "borrowed"] as const;
+export type LoanDirection = (typeof LOAN_DIRECTIONS)[number];
+
 export const THEME_VALUES = ["system", "light", "dark"] as const;
 export type ThemePreference = (typeof THEME_VALUES)[number];
 
-export const MODULE_KEYS = ["finance", "vehicles", "analytics"] as const;
+export const MODULE_KEYS = ["finance", "vehicles", "analytics", "loans"] as const;
 export type ModuleKey = (typeof MODULE_KEYS)[number];
 export type ModuleSettings = Record<ModuleKey, boolean>;
 
@@ -60,6 +75,7 @@ export const DEFAULT_MODULES: ModuleSettings = {
   finance: true,
   vehicles: true,
   analytics: true,
+  loans: true,
 };
 
 export const DOCUMENT_TYPES = [
@@ -93,10 +109,7 @@ export function isCustomCategory(
   type: TransactionType,
   category: string,
 ): boolean {
-  return (
-    category !== VEHICLE_CATEGORY &&
-    !defaultCategories(type).includes(category)
-  );
+  return !isLinkedCategory(category) && !defaultCategories(type).includes(category);
 }
 
 export function categoryOptions(

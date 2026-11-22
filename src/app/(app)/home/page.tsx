@@ -19,6 +19,7 @@ import { AddTransactionButton } from "@/components/transactions/add-transaction-
 import { Card } from "@/components/ui/card";
 import { categoryOptions } from "@/lib/constants";
 import { getBikes, getVehicleExpenses } from "@/lib/data/bikes";
+import { getLoans } from "@/lib/data/loans";
 import { getSettings } from "@/lib/data/settings";
 import { getFinanceRows } from "@/lib/data/transactions";
 import { formatMonth, resolveMonth } from "@/lib/dates";
@@ -29,6 +30,7 @@ import {
   usedCategories,
 } from "@/lib/finance";
 import { formatNumber, formatTaka } from "@/lib/format";
+import { loanCashEffect, loanTotals } from "@/lib/loans";
 import { fuelStats } from "@/lib/mileage";
 import { requireUser } from "@/lib/session";
 import type { BikeDTO, VehicleExpenseDTO } from "@/lib/types";
@@ -53,14 +55,19 @@ async function HomeContent({
   const user = await requireUser();
   const month = resolveMonth((await searchParams).month);
 
-  const [{ modules, hiddenCategories }, rows, bikes, records] = await Promise.all([
+  const [{ modules, hiddenCategories }, rows, bikes, records, loans] = await Promise.all([
     getSettings(user.id),
     getFinanceRows(user.id),
     getBikes(user.id),
     getVehicleExpenses(user.id),
+    getLoans(user.id),
   ]);
   const vehicles = bikes.filter((bike) => !bike.archived);
-  const savings = totalSavings(rows);
+  // Money in hand: money lent is out of it until repaid, borrowed money is in it.
+  const loanEffect = loanCashEffect(loans);
+  const savings = Math.round((totalSavings(rows) + loanEffect) * 100) / 100;
+  const lentTotals = loanTotals(loans, "lent");
+  const borrowedTotals = loanTotals(loans, "borrowed");
 
   return (
     <div className={cn("space-y-6", modules.finance && "max-md:pb-16")}>
@@ -85,9 +92,51 @@ async function HomeContent({
               >
                 {formatTaka(savings)}
               </p>
+              {loanEffect !== 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Money in hand, after money lent and borrowed
+                </p>
+              )}
             </div>
           </Card>
+        </>
+      )}
 
+      {modules.loans && (
+        <div className="grid grid-cols-2 gap-3">
+          <Link
+            href="/loans?view=lent"
+            className="rounded-xl border bg-card p-4 transition-colors hover:bg-muted active:bg-muted"
+          >
+            <p className="text-sm text-muted-foreground">Lent out</p>
+            <p className="text-xl font-semibold tracking-tight wrap-anywhere">
+              {formatTaka(lentTotals.outstanding)}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {lentTotals.openPeople === 0
+                ? "Nothing to get back"
+                : `${lentTotals.openPeople} ${lentTotals.openPeople === 1 ? "person owes" : "people owe"} you`}
+            </p>
+          </Link>
+          <Link
+            href="/loans?view=borrowed"
+            className="rounded-xl border bg-card p-4 transition-colors hover:bg-muted active:bg-muted"
+          >
+            <p className="text-sm text-muted-foreground">You owe</p>
+            <p className="text-xl font-semibold tracking-tight wrap-anywhere">
+              {formatTaka(borrowedTotals.outstanding)}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {borrowedTotals.openPeople === 0
+                ? "Nothing to pay back"
+                : `To ${borrowedTotals.openPeople} ${borrowedTotals.openPeople === 1 ? "person" : "people"}`}
+            </p>
+          </Link>
+        </div>
+      )}
+
+      {modules.finance && (
+        <>
           <SummaryCards summary={periodSummary(rows, month)} />
 
           <AddTransactionButton

@@ -23,6 +23,11 @@ const MODULES: { key: ModuleKey; label: string; description: string }[] = [
     label: "Financial analytics",
     description: "Charts on your home page. Needs Finance.",
   },
+  {
+    key: "loans",
+    label: "Loans",
+    description: "Money you lend and borrow, and what has been paid back.",
+  },
 ];
 
 export function ModuleSettingsForm({ modules }: { modules: ModuleSettings }) {

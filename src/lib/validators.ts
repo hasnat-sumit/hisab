@@ -2,6 +2,8 @@ import { z } from "zod";
 
 import {
   DOCUMENT_TYPE_VALUES,
+  isLinkedCategory,
+  LOAN_DIRECTIONS,
   MODULE_KEYS,
   normalizeVehicleExpenseType,
   THEME_VALUES,
@@ -76,11 +78,40 @@ export const transactionSchema = z.object({
     .refine(
       (value) => value.toLowerCase() !== VEHICLE_CATEGORY.toLowerCase(),
       "Add vehicle expenses from the Vehicles page, so they link to a vehicle.",
+    )
+    .refine(
+      (value) => !isLinkedCategory(value),
+      "Write off a loan from the Loans page, so it links to the loan.",
     ),
   amount: amountField,
   note: optionalText(200),
   recurring: z.boolean().optional(),
 });
+
+const personField = z
+  .string({ error: "Enter a name." })
+  .trim()
+  .min(1, "Enter a name.")
+  .max(60, "Keep the name under 60 characters.");
+
+export const loanSchema = z.object({
+  direction: z.enum(LOAN_DIRECTIONS),
+  person: personField,
+  amount: amountField,
+  date: dateField,
+  note: optionalText(200),
+});
+
+/** Editing keeps whether the money was lent or borrowed. */
+export const loanUpdateSchema = loanSchema.omit({ direction: true });
+
+export const repaymentSchema = z.object({
+  amount: amountField,
+  date: dateField,
+  note: optionalText(200),
+});
+
+export const writeOffSchema = z.object({ date: dateField });
 
 export const bikeSchema = z.object({
   name: z

@@ -27,6 +27,7 @@ const userSettingsSchema = new Schema<UserSettingsDoc>(
       finance: { type: Boolean },
       vehicles: { type: Boolean },
       analytics: { type: Boolean },
+      loans: { type: Boolean },
     },
     hiddenCategories: {
       expense: { type: [String], default: undefined },

@@ -1,6 +1,6 @@
 "use client";
 
-import { Bike, Home, Settings, UserRound, WalletCards } from "lucide-react";
+import { Bike, HandCoins, Home, UserRound, WalletCards } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: "/home", label: "Home", icon: Home },
   { href: "/expenses", label: "Expenses", icon: WalletCards, module: "finance" },
   { href: "/bike", label: "Vehicles", icon: Bike, module: "vehicles" },
+  { href: "/loans", label: "Loans", icon: HandCoins, module: "loans" },
   { href: "/profile", label: "Profile", icon: UserRound },
 ] as const;
 

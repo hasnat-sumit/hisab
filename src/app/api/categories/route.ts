@@ -1,5 +1,5 @@
 import { ApiError, parseData, withUser } from "@/lib/api";
-import { isCustomCategory, VEHICLE_CATEGORY } from "@/lib/constants";
+import { isCustomCategory, isLinkedCategory } from "@/lib/constants";
 import { Transaction } from "@/lib/models/transaction";
 import { UserSettings } from "@/lib/models/user-settings";
 import { categoryDeleteSchema } from "@/lib/validators";
@@ -13,8 +13,8 @@ export const DELETE = withUser(async ({ request, user }) => {
     { type: searchParams.get("type"), name: searchParams.get("name") },
     categoryDeleteSchema,
   );
-  if (name === VEHICLE_CATEGORY) {
-    throw new ApiError(409, "The Vehicle category belongs to your vehicles.");
+  if (isLinkedCategory(name)) {
+    throw new ApiError(409, "The app manages this category for your vehicles and loans.");
   }
 
   if (name !== "Other") {

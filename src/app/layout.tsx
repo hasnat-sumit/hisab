@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   title: { default: "হিসাব-Hisab", template: "%s · হিসাব-Hisab" },
   description:
     "Track your income, savings, vehicles and fuel in one simple place.",
-  appleWebApp: { capable: true, title: "Hisab", statusBarStyle: "default" },
+  appleWebApp: { capable: true, title: "হিসাব-Hisab", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {

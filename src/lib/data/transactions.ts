@@ -22,6 +22,7 @@ function toDTO(doc: LeanTransaction): TransactionDTO {
     recurring: doc.recurring,
     bikeId: doc.bikeId?.toString(),
     vehicleExpenseType: doc.vehicleExpenseType,
+    loanId: doc.loanId?.toString(),
     fuel: doc.fuel
       ? {
           odometer: doc.fuel.odometer,
