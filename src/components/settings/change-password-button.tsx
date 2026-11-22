@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import type { z } from "zod";
 
 import { FormField } from "@/components/form-field";
+import { PasswordInput } from "@/components/password-input";
 import { SubmitButton } from "@/components/submit-button";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +17,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
 import { changePasswordSchema } from "@/lib/validators";
 
@@ -59,9 +59,8 @@ function ChangePasswordForm({ onDone }: { onDone: () => void }) {
         label="Current password"
         error={errors.currentPassword?.message}
       >
-        <Input
+        <PasswordInput
           id="current-password"
-          type="password"
           autoComplete="current-password"
           aria-invalid={Boolean(errors.currentPassword) || undefined}
           {...register("currentPassword")}
@@ -72,9 +71,8 @@ function ChangePasswordForm({ onDone }: { onDone: () => void }) {
         label="New password"
         error={errors.newPassword?.message}
       >
-        <Input
+        <PasswordInput
           id="new-password"
-          type="password"
           autoComplete="new-password"
           aria-invalid={Boolean(errors.newPassword) || undefined}
           {...register("newPassword")}

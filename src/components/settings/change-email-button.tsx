@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import type { z } from "zod";
 
 import { FormField } from "@/components/form-field";
+import { PasswordInput } from "@/components/password-input";
 import { SubmitButton } from "@/components/submit-button";
 import { Button } from "@/components/ui/button";
 import {
@@ -84,9 +85,8 @@ function ChangeEmailForm({ onDone }: { onDone: () => void }) {
         label="Current password"
         error={errors.currentPassword?.message}
       >
-        <Input
+        <PasswordInput
           id="email-current-password"
-          type="password"
           autoComplete="current-password"
           aria-invalid={Boolean(errors.currentPassword) || undefined}
           {...register("currentPassword")}

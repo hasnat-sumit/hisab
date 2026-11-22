@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import type { z } from "zod";
 
 import { FormField } from "@/components/form-field";
+import { PasswordInput } from "@/components/password-input";
 import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
 import { authClient } from "@/lib/auth-client";
@@ -52,9 +53,8 @@ export function LogInForm() {
         label="Password"
         error={errors.password?.message}
       >
-        <Input
+        <PasswordInput
           id="password"
-          type="password"
           autoComplete="current-password"
           aria-invalid={Boolean(errors.password) || undefined}
           {...register("password")}
