@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Noto_Sans_Bengali } from "next/font/google";
 
+import { OfflineBanner } from "@/components/offline-banner";
+import { ServiceWorker } from "@/components/service-worker";
 import { Toaster } from "@/components/ui/sonner";
 import { THEME_SCRIPT } from "@/lib/theme";
 
@@ -55,7 +57,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
       <body className="flex min-h-dvh flex-col">
+        <OfflineBanner />
         {children}
+        <ServiceWorker />
         <Toaster
           position="top-center"
           richColors

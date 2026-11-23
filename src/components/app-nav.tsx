@@ -4,6 +4,7 @@ import { Bike, HandCoins, Home, UserRound, WalletCards } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { PendingIcon } from "@/components/pending-icon";
 import type { ModuleSettings } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -48,7 +49,9 @@ export function AppNav({ modules }: { modules: ModuleSettings }) {
                   : "text-muted-foreground hover:bg-muted hover:text-foreground",
               )}
             >
-              <Icon className="size-4.5" aria-hidden />
+              <PendingIcon className="size-4.5">
+                <Icon className="size-4.5" aria-hidden />
+              </PendingIcon>
               {label}
             </Link>
           );
@@ -74,7 +77,9 @@ export function AppNav({ modules }: { modules: ModuleSettings }) {
                 active ? "text-primary" : "text-muted-foreground",
               )}
             >
-              <Icon className="size-5" aria-hidden />
+              <PendingIcon className="size-5">
+                <Icon className="size-5" aria-hidden />
+              </PendingIcon>
               {label}
             </Link>
           );

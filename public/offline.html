@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#000000" />
+    <title>No internet · হিসাব-Hisab</title>
+    <link rel="icon" href="/icon-192.png" />
+    <style>
+      :root {
+        --bg: oklch(0.985 0.002 165);
+        --card: oklch(1 0 0);
+        --fg: oklch(0.21 0.01 165);
+        --muted: oklch(0.5 0.012 165);
+        --border: oklch(0.925 0.004 165);
+        --primary: oklch(0.508 0.118 165.612);
+        --primary-fg: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: oklch(0.17 0.008 165);
+          --card: oklch(0.22 0.01 165);
+          --fg: oklch(0.95 0.005 165);
+          --muted: oklch(0.72 0.012 165);
+          --border: oklch(1 0 0 / 12%);
+          --primary: oklch(0.6 0.13 165);
+          --primary-fg: #ffffff;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 24px 16px;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Bengali", sans-serif;
+      }
+      main {
+        width: 100%;
+        max-width: 360px;
+        padding: 28px 24px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: var(--card);
+        text-align: center;
+      }
+      img { width: 64px; height: 64px; border-radius: 14px; }
+      h1 { margin: 16px 0 8px; font-size: 1.25rem; }
+      p { margin: 0 0 20px; color: var(--muted); line-height: 1.5; font-size: 0.95rem; }
+      button {
+        width: 100%;
+        height: 44px;
+        border: 0;
+        border-radius: 10px;
+        background: var(--primary);
+        color: var(--primary-fg);
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/icon-192.png" alt="" />
+      <h1>No internet connection</h1>
+      <p>
+        হিসাব-Hisab needs the internet to load your money records. This page
+        will reload by itself when you are back online.
+      </p>
+      <button type="button" id="retry">Try again</button>
+    </main>
+    <script>
+      document.getElementById("retry").addEventListener("click", function () {
+        location.reload();
+      });
+      window.addEventListener("online", function () {
+        location.reload();
+      });
+    </script>
+  </body>
+</html>

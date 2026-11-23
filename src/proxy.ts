@@ -19,6 +19,7 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|icon.svg|icon-|apple-icon|manifest.webmanifest).*)",
+    // Files the browser and the Android app fetch before anyone has logged in.
+    "/((?!api|_next/static|_next/image|icon.svg|icon-|apple-icon|hisab-logo.png|manifest.webmanifest|sw.js|offline.html|\\.well-known).*)",
   ],
 };
